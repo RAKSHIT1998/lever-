@@ -19,6 +19,10 @@
 - [ ] Run the app with `-onboarding` cleared on a fresh install; verify empty states on Home, Vault, Savings
 - [ ] Verify Face ID lock on a device (simulator uses the passcode fallback)
 - [ ] Localise strings if shipping outside English markets
+- [ ] Request the FinanceKit entitlement (`com.apple.developer.financekit`) from Apple; until granted, Wallet shows "not enabled for this build"
+- [ ] Enable Background Modes → Background fetch on the app target in App Store Connect capabilities (Info.plist already declares `BGTaskSchedulerPermittedIdentifiers`)
+- [ ] Verify Photos (screenshot watcher) and Calendar (write-only) prompts on device; both are opt-in and only requested when used
+- [ ] Test statement import with real CSV/PDF exports from 2–3 Indian banks (HDFC, ICICI, SBI) and one card issuer
 
 ## Product / trust
 - [x] No claims of guaranteed savings anywhere in copy; potential amounts are labelled "potential"
@@ -35,7 +39,8 @@
 - [x] No secrets in source control (`.gitignore` excludes `Secrets.swift`, `.env`)
 
 ## Known limitations (v1)
-- Price tracking is manual (user-recorded observations); `PriceMonitoring` protocol ready for approved APIs
+- Price tracking reads public page metadata only; pages without Open Graph/schema.org price tags fall back to manual entry
+- Apple Wallet import compiles but is inert until Apple grants the FinanceKit entitlement
 - Remote intelligence is a fallback stub — `RemoteIntelligenceProvider` needs an endpoint + consent flow
 - Family vault is data-model-ready only (`householdID`)
 - Live Activities not implemented; lock-screen accessory widgets cover urgent deadlines

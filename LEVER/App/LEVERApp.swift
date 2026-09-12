@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import BackgroundTasks
 
 @main
 struct LEVERApp: App {
@@ -16,6 +17,9 @@ struct LEVERApp: App {
                     environment.handle(url: url)
                 }
                 .onChange(of: scenePhase) { _, phase in
+                    if phase == .background {
+                        LEVERApp.scheduleBackgroundRefresh()
+                    }
                     if phase == .active {
                         if let url = IntentRouter.pendingURL {
                             IntentRouter.pendingURL = nil
@@ -39,6 +43,17 @@ struct LEVERApp: App {
                     await environment.repository.refreshAllOpportunities()
                 }
         }
+        .backgroundTask(.appRefresh(BackgroundRefresh.taskIdentifier)) {
+            await environment.repository.performBackgroundRefresh(priceMonitor: environment.priceMonitor)
+            LEVERApp.scheduleBackgroundRefresh()
+        }
+    }
+
+    /// Asks iOS for a refresh roughly once a day. iOS decides the actual time based on usage.
+    nonisolated static func scheduleBackgroundRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: BackgroundRefresh.taskIdentifier)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 12 * 60 * 60)
+        try? BGTaskScheduler.shared.submit(request)
     }
 }
 

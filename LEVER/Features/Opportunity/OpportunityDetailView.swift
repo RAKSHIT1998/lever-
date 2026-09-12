@@ -13,6 +13,7 @@ struct OpportunityDetailView: View {
     @State private var showWhy = false
     @State private var showDismissConfirm = false
     @State private var copied = false
+    @State private var calendarResult: Bool?
 
     var body: some View {
         ScrollView {
@@ -184,6 +185,22 @@ struct OpportunityDetailView: View {
 
     private var actions: some View {
         VStack(spacing: Spacing.xs) {
+            if let deadline = opportunity.deadline, opportunity.isActionable {
+                Button {
+                    Task {
+                        let ok = await env.calendar.addDeadline(title: "LEVER: \(opportunity.title)", notes: opportunity.recommendedAction, date: deadline)
+                        calendarResult = ok
+                        if ok { Haptics.actionCompleted() }
+                    }
+                } label: {
+                    Label(calendarResult == true ? "Added to Calendar" : "Add deadline to Calendar", systemImage: calendarResult == true ? "checkmark.circle.fill" : "calendar.badge.plus")
+                }
+                .buttonStyle(.secondary)
+                .disabled(calendarResult == true)
+                if calendarResult == false {
+                    Text("Calendar access wasn't granted. You can allow it in Settings → Privacy → Calendars.").font(LeverFont.caption).foregroundStyle(LeverColor.urgent)
+                }
+            }
             if opportunity.type == .negotiation || opportunity.type == .subscriptionRenewal {
                 Button("Prepare negotiation") { showNegotiation = true }.buttonStyle(.secondary)
                     .accessibilityIdentifier("prepareNegotiationButton")

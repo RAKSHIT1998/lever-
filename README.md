@@ -54,6 +54,9 @@ CAPTURE → `IntelligenceProvider.extractDocument` → `DocumentReviewView` (use
 - Nothing is sent, cancelled or purchased on the user's behalf — LEVER prepares, the user acts.
 - All processing is on-device (Vision + PDFKit + NaturalLanguage). `RemoteIntelligenceProvider` exists behind the same protocol and is off; cloud is opt-in and disabled until configured.
 
+## How it learns about spending
+See [HOW_IT_WORKS.md](HOW_IT_WORKS.md). Short version: camera/share sheet, an opt-in screenshot watcher, bank/card statement import with automatic recurring-charge detection, Apple Wallet via FinanceKit (entitlement pending), daily price re-checks of pasted product pages, and repeat-charge detection across the vault — all on-device.
+
 ## Privacy
 Local-first SwiftData store under `NSFileProtectionComplete`; originals stored with complete file protection; Keychain for the installation ID; optional Face ID lock; Privacy Center with export (JSON) and *Delete everything*. Analytics are event names only, logged locally.
 

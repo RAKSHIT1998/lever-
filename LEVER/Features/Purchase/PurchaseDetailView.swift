@@ -321,6 +321,8 @@ struct RecordPriceSheet: View {
     let purchase: Purchase
     @State private var priceText = ""
     @State private var urlText: String
+    @State private var checking = false
+    @State private var checkMessage: String?
 
     init(purchase: Purchase) {
         self.purchase = purchase
@@ -334,7 +336,25 @@ struct RecordPriceSheet: View {
                 TextField("Current price (\(purchase.currencyCode))", text: $priceText).keyboardType(.decimalPad).font(LeverFont.hero(34)).accessibilityIdentifier("recordPriceField")
                 TextField("Product link (optional)", text: $urlText).keyboardType(.URL).textInputAutocapitalization(.never).font(LeverFont.callout)
                     .padding(10).background(LeverColor.surfaceElevated, in: RoundedRectangle(cornerRadius: Radius.sm))
-                Text("Automatic tracking from approved sources is coming. LEVER doesn't scrape websites.").font(.caption2).foregroundStyle(LeverColor.inkTertiary)
+                if let url = URL(string: urlText), env.priceMonitor.supportsAutomaticTracking(for: url) {
+                    Button {
+                        checking = true
+                        Task {
+                            if let price = try? await env.priceMonitor.fetchCurrentPrice(for: url) {
+                                priceText = "\(price)"
+                                checkMessage = "Read \(Money.format(price, code: purchase.currencyCode)) from the page."
+                            } else {
+                                checkMessage = "Couldn't find a listed price on that page. Enter it manually."
+                            }
+                            checking = false
+                        }
+                    } label: {
+                        Label(checking ? "Reading page…" : "Read price from page", systemImage: "safari")
+                    }
+                    .buttonStyle(.compact(LeverColor.inkSecondary)).disabled(checking)
+                }
+                if let checkMessage { Text(checkMessage).font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary) }
+                Text("With a link saved, LEVER re-reads the page's listed price about once a day and tells you if it drops.").font(.caption2).foregroundStyle(LeverColor.inkTertiary)
                 Spacer()
                 Button("Save price") {
                     guard let price = AmountParser.parseDecimal(priceText), price > 0 else { return }

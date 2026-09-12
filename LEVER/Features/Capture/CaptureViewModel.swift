@@ -12,6 +12,7 @@ final class CaptureViewModel {
         case review
         case saving
         case result
+        case statement([StatementTransaction], String)
         case failed(String)
     }
 
@@ -100,7 +101,7 @@ final class CaptureViewModel {
         case "jpg", "jpeg", "png", "heic", "heif", "tiff", "webp":
             guard let image = UIImage(data: data) else { return fail("Couldn't read that image.") }
             await process(images: [image])
-        case "txt", "eml", "md", "csv":
+        case "txt", "eml", "md", "csv", "tsv":
             await process(text: String(decoding: data, as: UTF8.self))
         default:
             fail("LEVER can't read .\(fileURL.pathExtension) files yet. Try a photo, screenshot, PDF or text.")
@@ -135,6 +136,16 @@ final class CaptureViewModel {
             phase = .processing(step: 1)
             var doc = try await extraction()
             if doc.rawText.squashedWhitespace.count < 8 { throw IntelligenceError.unreadable }
+            // Statements aren't purchases: hand them to the recurring-charge flow instead.
+            let importer = StatementImporter()
+            if doc.documentType == .financial || importer.looksLikeStatement(doc.rawText) {
+                let transactions = importer.parse(doc.rawText, defaultCurrency: self.env.currencyCode)
+                if transactions.count >= 3 {
+                    phase = .statement(transactions, doc.rawText)
+                    Haptics.scanSucceeded()
+                    return
+                }
+            }
             phase = .processing(step: 2)
             try await stepDelay()
             if !doc.hasUsableCore {

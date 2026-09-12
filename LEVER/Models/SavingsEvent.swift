@@ -111,6 +111,13 @@ final class AppSettings {
     var paywallSeenAt: Date?
     var lastInboxImportAt: Date?
     var sampleDataSeeded: Bool
+    // Ingestion sources (added later — defaults keep lightweight migration happy).
+    var screenshotWatchEnabled: Bool = false
+    var lastScreenshotCheck: Date? = nil
+    var priceTrackingEnabled: Bool = true
+    var walletConnected: Bool = false
+    var lastWalletSync: Date? = nil
+    var lastBackgroundRefresh: Date? = nil
 
     init() {
         hasCompletedOnboarding = false

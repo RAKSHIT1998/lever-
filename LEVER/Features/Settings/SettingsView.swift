@@ -61,6 +61,11 @@ struct SettingsView: View {
                     if let biometricError { Text(biometricError).font(LeverFont.caption).foregroundStyle(LeverColor.urgent) }
                 }
 
+                Section("Sources") {
+                    NavigationLink("How LEVER knows what you spend") { SourcesView() }
+                        .accessibilityIdentifier("sourcesLink")
+                }
+
                 Section("Privacy") {
                     NavigationLink("Privacy Center") { PrivacyCenterView() }
                         .accessibilityIdentifier("privacyCenterLink")

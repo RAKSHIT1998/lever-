@@ -8,6 +8,8 @@ struct HomeView: View {
     @Query private var purchases: [Purchase]
     @State private var selected: Opportunity?
     @State private var showAll = false
+    @State private var showScreenshots = false
+    @State private var showSources = false
 
     private var open: [Opportunity] {
         OpportunityRanker.rank(allOpportunities.filter(\.isActionable)) { $0.priorityScore }
@@ -49,6 +51,7 @@ struct HomeView: View {
                     }
 
                     thisMonth
+                    sourcesRow
 
                     Button {
                         env.router.selectedTab = .capture
@@ -89,6 +92,8 @@ struct HomeView: View {
             .refreshable {
                 await env.repository.refreshAllOpportunities()
             }
+            .sheet(isPresented: $showScreenshots) { ScreenshotPickerSheet() }
+            .navigationDestination(isPresented: $showSources) { SourcesView() }
         }
     }
 
@@ -107,6 +112,12 @@ struct HomeView: View {
                     env.router.selectedTab = .capture
                 } label: {
                     InsightBanner(symbol: "tray.and.arrow.down.fill", title: "\(env.pendingInboxCount) item\(env.pendingInboxCount == 1 ? "" : "s") shared to LEVER", message: "Tap to review what LEVER finds.")
+                }
+                .buttonStyle(.plain)
+            }
+            if env.pendingScreenshotCount > 0 {
+                Button { showScreenshots = true } label: {
+                    InsightBanner(symbol: "rectangle.dashed.badge.record", title: "\(env.pendingScreenshotCount) new screenshot\(env.pendingScreenshotCount == 1 ? "" : "s") since you last looked", message: "Any receipts or renewals in there? Tap to check.", tint: LeverColor.money)
                 }
                 .buttonStyle(.plain)
             }
@@ -153,6 +164,29 @@ struct HomeView: View {
         }
         .inkPanel()
         .accessibilityElement(children: .combine)
+    }
+
+    private var connectedSources: Int {
+        1 + (env.settings.screenshotWatchEnabled ? 1 : 0) + (env.settings.walletConnected ? 1 : 0) + (purchases.contains { $0.productURL != nil } ? 1 : 0) + (purchases.contains { $0.subscription?.source.lowercased().contains("statement") ?? false } ? 1 : 0)
+    }
+
+    /// Where LEVER's knowledge comes from — and an invitation to widen it.
+    private var sourcesRow: some View {
+        Button { showSources = true } label: {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "antenna.radiowaves.left.and.right").font(.body.weight(.semibold)).foregroundStyle(LeverColor.ink).frame(width: 26)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(connectedSources <= 1 ? "LEVER only knows what you scan" : "\(connectedSources) sources feeding LEVER").font(LeverFont.headline).foregroundStyle(LeverColor.ink)
+                    Text(connectedSources <= 1 ? "Import a statement or turn on the screenshot watcher to catch renewals you'd never scan." : "Statements, screenshots, Wallet and tracked prices. Manage sources.")
+                        .font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary).multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(LeverColor.inkTertiary)
+            }
+            .leverCard(padding: Spacing.sm, radius: Radius.md)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("sourcesRow")
     }
 
     private var greeting: String {

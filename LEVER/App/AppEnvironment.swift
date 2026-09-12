@@ -17,6 +17,12 @@ final class AppEnvironment {
     let inbox: InboxImporter
     let files: DocumentFileStore
     let router = AppRouter()
+    let screenshots = ScreenshotWatcher()
+    let wallet = WalletTransactionSource()
+    let calendar = CalendarExporter()
+
+    /// New screenshots noticed since the last check (only when the watcher is enabled).
+    var pendingScreenshotCount = 0
 
     /// Set by the biometric gate; sensitive screens check this.
     var isUnlocked = true
@@ -61,7 +67,7 @@ final class AppEnvironment {
             notifications: NotificationService(),
             store: StoreService(),
             biometrics: uiTesting ? AlwaysAllowBiometrics() : BiometricAuthService(),
-            priceMonitor: ManualPriceMonitor(),
+            priceMonitor: PublicPagePriceMonitor(),
             files: DocumentFileStore()
         )
         env.launchedForUITests = uiTesting
@@ -103,7 +109,18 @@ final class AppEnvironment {
 
     func refreshInboxCount() {
         pendingInboxCount = inbox.pending().count
+        refreshScreenshotCount()
     }
+
+    func refreshScreenshotCount() {
+        guard settings.screenshotWatchEnabled, !launchedForUITests else { pendingScreenshotCount = 0; return }
+        pendingScreenshotCount = screenshots.newScreenshots(since: settings.lastScreenshotCheck).count
+    }
+
+}
+
+enum BackgroundRefresh {
+    static let taskIdentifier = "com.rakshit1998.lever.refresh"
 }
 
 /// Notification scheduler that records instead of scheduling — previews and tests.

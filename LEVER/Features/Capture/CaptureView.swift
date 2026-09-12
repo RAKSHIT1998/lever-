@@ -13,6 +13,7 @@ struct CaptureView: View {
     @State private var showPasteSheet = false
     @State private var photoItems: [PhotosPickerItem] = []
     @State private var pastedText = ""
+    @State private var showScreenshots = false
 
     var body: some View {
         Group {
@@ -54,6 +55,10 @@ struct CaptureView: View {
                             finishFlow(model)
                         }
                     }
+                case .statement(let transactions, let text):
+                    StatementReviewView(transactions: transactions, source: "Statement · \(model.rawInputDescription)", statementText: text) { _ in
+                        finishFlow(model)
+                    }
                 case .failed(let message):
                     failure(message, model)
                 }
@@ -79,13 +84,25 @@ struct CaptureView: View {
                 }
                 .ignoresSafeArea()
             }
-            .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.pdf, .image, .plainText, .emailMessage], allowsMultipleSelection: false) { result in
+            .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.pdf, .image, .plainText, .emailMessage, .commaSeparatedText, .tabSeparatedText], allowsMultipleSelection: false) { result in
                 if case .success(let urls) = result, let url = urls.first {
                     Task { await model.process(fileURL: url) }
                 }
             }
             .sheet(isPresented: $showPasteSheet) {
                 pasteSheet(model)
+            }
+            .sheet(isPresented: $showScreenshots) { ScreenshotPickerSheet() }
+            .onChange(of: env.router.pendingScreenshot) { _, image in
+                guard let image else { return }
+                env.router.pendingScreenshot = nil
+                Task { await model.process(images: [image]) }
+            }
+            .onAppear {
+                if let image = env.router.pendingScreenshot {
+                    env.router.pendingScreenshot = nil
+                    Task { await model.process(images: [image]) }
+                }
             }
             .onChange(of: photoItems) { _, items in
                 guard let item = items.first else { return }
@@ -157,6 +174,12 @@ struct CaptureView: View {
                 if env.pendingInboxCount > 0 {
                     inbox(model)
                 }
+                if env.pendingScreenshotCount > 0 {
+                    Button { showScreenshots = true } label: {
+                        InsightBanner(symbol: "rectangle.dashed.badge.record", title: "\(env.pendingScreenshotCount) new screenshot\(env.pendingScreenshotCount == 1 ? "" : "s")", message: "Tap to see if any are receipts, renewals or bookings.", tint: LeverColor.money)
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     SectionHeader(title: "Or choose")
@@ -171,8 +194,9 @@ struct CaptureView: View {
                         .disabled(!model.canCapture)
                         Button { showFileImporter = true } label: { SourceTile(symbol: "doc.richtext", title: "PDF") }
                             .disabled(!model.canCapture)
-                        Button { showFileImporter = true } label: { SourceTile(symbol: "folder", title: "Files") }
+                        Button { showFileImporter = true } label: { SourceTile(symbol: "building.columns", title: "Statement", hint: "CSV · PDF") }
                             .disabled(!model.canCapture)
+                            .accessibilityIdentifier("captureStatementButton")
                         Button { pastedText = UIPasteboard.general.string ?? ""; showPasteSheet = true } label: { SourceTile(symbol: "doc.on.clipboard", title: "Paste text") }
                             .disabled(!model.canCapture)
                             .accessibilityIdentifier("capturePasteButton")

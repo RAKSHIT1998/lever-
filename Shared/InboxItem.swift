@@ -7,6 +7,8 @@ struct InboxItem: Codable, Identifiable, Hashable {
         case pdf
         case text
         case url
+        /// A `.leverpurchase` bundle shared by a household member.
+        case transfer
     }
 
     var id: UUID

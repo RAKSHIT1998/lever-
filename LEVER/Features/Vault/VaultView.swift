@@ -136,6 +136,7 @@ enum VaultFilter {
         case .warranties: !p.warranties.isEmpty
         case .travel: p.isTravel
         case .insurance: p.documentType == .insurance || p.merchantCategory == .insurance
+        case .family: p.householdID != nil || p.sharedBy != nil
         case .documents: !p.documents.isEmpty
         }
     }

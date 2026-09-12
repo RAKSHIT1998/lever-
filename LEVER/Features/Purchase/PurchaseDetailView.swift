@@ -37,6 +37,7 @@ struct PurchaseDetailView: View {
                 details
                 coverage
                 if let sub = purchase.subscription { subscription(sub) }
+                if let estimate = resaleEstimate { resale(estimate) }
                 priceHistory
                 documents
                 timeline
@@ -192,6 +193,43 @@ struct PurchaseDetailView: View {
                     }
                     .buttonStyle(.compact(LeverColor.inkSecondary))
                 }
+            }
+            .leverCard()
+        }
+    }
+
+    private var resaleEstimate: ResaleEstimate? {
+        guard purchase.subscription == nil, purchase.amount >= 5_000, let date = purchase.purchaseDate else { return nil }
+        return ResaleEstimator.estimate(price: purchase.amount, purchaseDate: date, title: purchase.title, category: purchase.merchantCategory)
+    }
+
+    private func resale(_ e: ResaleEstimate) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            SectionHeader(title: "Estimated resale value")
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack(alignment: .lastTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Today").font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)
+                        MoneyAmount(amount: e.valueNow, currencyCode: purchase.currencyCode, size: .medium)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("In 6 months").font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)
+                        MoneyAmount(amount: e.valueInSixMonths, currencyCode: purchase.currencyCode, size: .medium, tint: LeverColor.inkSecondary)
+                    }
+                }
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(LeverColor.surfaceElevated)
+                        Capsule().fill(LeverColor.money.opacity(0.7)).frame(width: geo.size.width * CGFloat(min(1, NSDecimalNumber(decimal: e.valueNow / max(purchase.amount, 1)).doubleValue)))
+                    }
+                }
+                .frame(height: 6)
+                HStack(spacing: 6) {
+                    ConfidenceBadge(confidence: e.confidence)
+                    Text("\(e.deviceClass.displayName) · \(e.ageMonths) months old").font(.caption2).foregroundStyle(LeverColor.inkTertiary)
+                }
+                Text(e.method + ". Real offers depend on condition and demand.").font(.caption2).foregroundStyle(LeverColor.inkTertiary)
             }
             .leverCard()
         }

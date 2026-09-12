@@ -164,6 +164,24 @@ struct ActionPlanGenerator: Sendable {
                 generatedBy: generatedBy
             )
 
+        case .resale:
+            return ActionPlanDraft(
+                summary: "Decide whether to sell \(product) before its next value drop.",
+                whyItMatters: why,
+                estimatedSavings: o.estimatedSavings,
+                steps: [
+                    "Only act if you plan to replace it — a device you use isn't a loss.",
+                    "Look up two current listings for your exact model, storage and condition.",
+                    "Back up and factory-reset before handing it over; keep the box and receipt for the buyer.",
+                    "Record what you sold it for in LEVER so the outcome is tracked.",
+                ],
+                messageDraft: "For sale: \(product)\(o.purchase?.purchaseDate.map { ", bought \($0.formatted(.dateTime.month(.wide).year())) " } ?? " ")with original receipt\((o.purchase?.warranties.isEmpty == false) ? " and coverage still active" : ""). Excellent condition, fully working. Asking \(o.purchase.flatMap { p in o.estimatedSavings.map { _ in Money.format(p.amount, code: p.currencyCode) } } ?? "[price]") — open to reasonable offers.",
+                callScript: nil,
+                deadline: o.deadline,
+                confidence: o.confidence,
+                generatedBy: generatedBy
+            )
+
         case .maintenance, .unknown:
             return ActionPlanDraft(
                 summary: o.title,

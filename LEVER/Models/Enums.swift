@@ -118,10 +118,11 @@ enum EvidenceKind: String, Codable, CaseIterable {
 enum OpportunityType: String, Codable, CaseIterable {
     case subscriptionRenewal, priceDrop, returnDeadline, refund, warrantyExpiration, negotiation
     case duplicateCharge, feeDetection, insuranceOpportunity, purchaseProtection, cheaperAlternative
-    case travelPriceChange, claimOpportunity, maintenance, unknown
+    case travelPriceChange, claimOpportunity, maintenance, resale, unknown
 
     var displayName: String {
         switch self {
+        case .resale: "Resale"
         case .subscriptionRenewal: "Renewal"
         case .priceDrop: "Price drop"
         case .returnDeadline: "Return window"
@@ -156,6 +157,7 @@ enum OpportunityType: String, Codable, CaseIterable {
         case .travelPriceChange: "airplane.circle.fill"
         case .claimOpportunity: "doc.badge.plus"
         case .maintenance: "wrench.and.screwdriver.fill"
+        case .resale: "arrow.left.arrow.right.circle.fill"
         case .unknown: "sparkles"
         }
     }
@@ -164,7 +166,7 @@ enum OpportunityType: String, Codable, CaseIterable {
     var lane: OpportunityLane {
         switch self {
         case .returnDeadline, .subscriptionRenewal, .duplicateCharge, .feeDetection: .urgent
-        case .priceDrop, .refund, .negotiation, .cheaperAlternative, .travelPriceChange, .claimOpportunity: .opportunity
+        case .priceDrop, .refund, .negotiation, .cheaperAlternative, .travelPriceChange, .claimOpportunity, .resale: .opportunity
         case .warrantyExpiration, .insuranceOpportunity, .purchaseProtection, .maintenance, .unknown: .protection
         }
     }
@@ -174,7 +176,7 @@ extension OpportunityType {
     /// Whether an estimated amount for this type is a saving/recovery (true) or the value at stake / protected (false).
     var representsSaving: Bool {
         switch self {
-        case .subscriptionRenewal, .priceDrop, .refund, .negotiation, .duplicateCharge, .feeDetection, .cheaperAlternative, .travelPriceChange, .claimOpportunity: true
+        case .subscriptionRenewal, .priceDrop, .refund, .negotiation, .duplicateCharge, .feeDetection, .cheaperAlternative, .travelPriceChange, .claimOpportunity, .resale: true
         case .returnDeadline, .warrantyExpiration, .insuranceOpportunity, .purchaseProtection, .maintenance, .unknown: false
         }
     }
@@ -338,7 +340,7 @@ enum WarrantyType: String, Codable, CaseIterable {
 }
 
 enum VaultCategory: String, CaseIterable, Identifiable {
-    case all, purchases, subscriptions, bills, warranties, travel, insurance, documents
+    case all, purchases, subscriptions, bills, warranties, travel, insurance, family, documents
 
     var id: String { rawValue }
     var displayName: String { rawValue.capitalized }

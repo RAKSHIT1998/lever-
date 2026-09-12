@@ -62,6 +62,7 @@ struct OpportunityCard: View {
     private var savingsLabel: String {
         switch opportunity.type {
         case .priceDrop, .refund, .travelPriceChange, .claimOpportunity: "Potential recovery"
+        case .resale: "Value at risk of eroding"
         case .returnDeadline: "Money at stake"
         case .warrantyExpiration, .purchaseProtection, .insuranceOpportunity: "Value protected"
         default: "Potential saving"
@@ -74,6 +75,7 @@ struct OpportunityCard: View {
         case .priceDrop, .travelPriceChange, .cheaperAlternative, .refund: "Check options"
         case .warrantyExpiration: "Open warranty"
         case .returnDeadline: "Protect it"
+        case .resale: "See estimate"
         default: "Review"
         }
     }

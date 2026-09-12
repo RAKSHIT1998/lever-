@@ -18,7 +18,7 @@ struct SavingsConfirmationSheet: View {
 
     static func defaultKind(for type: OpportunityType) -> SavingsKind {
         switch type {
-        case .priceDrop, .refund, .duplicateCharge, .travelPriceChange, .claimOpportunity: .recovered
+        case .priceDrop, .refund, .duplicateCharge, .travelPriceChange, .claimOpportunity, .resale: .recovered
         case .subscriptionRenewal, .feeDetection, .cheaperAlternative: .avoided
         case .negotiation: .negotiated
         case .warrantyExpiration, .purchaseProtection, .insuranceOpportunity, .returnDeadline: .protected

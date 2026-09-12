@@ -24,6 +24,8 @@ final class Purchase {
     var notes: String?
     var tags: [String]
     var householdID: UUID?
+    /// Display name of the household member who shared this purchase (nil when it's your own).
+    var sharedBy: String? = nil
     var createdAt: Date
     var updatedAt: Date
 

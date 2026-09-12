@@ -88,6 +88,8 @@ final class UserProfile {
     var displayName: String?
     var currencyCode: String
     var householdID: UUID?
+    var householdName: String? = nil
+    var householdMembers: [String] = []
     var createdAt: Date
 
     init(id: UUID = UUID(), displayName: String? = nil, currencyCode: String, householdID: UUID? = nil) {

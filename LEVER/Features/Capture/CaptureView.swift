@@ -10,9 +10,8 @@ struct CaptureView: View {
     @State private var model: CaptureViewModel?
     @State private var showScanner = false
     @State private var showFileImporter = false
-    @State private var showPasteSheet = false
+    @State private var pasteRequest: PasteRequest?
     @State private var photoItems: [PhotosPickerItem] = []
-    @State private var pastedText = ""
     @State private var showScreenshots = false
 
     var body: some View {
@@ -89,8 +88,13 @@ struct CaptureView: View {
                     Task { await model.process(fileURL: url) }
                 }
             }
-            .sheet(isPresented: $showPasteSheet) {
-                pasteSheet(model)
+            .sheet(item: $pasteRequest) { request in
+                PasteSheetView(initialText: request.text) { text in
+                    pasteRequest = nil
+                    Task { await model.process(text: text) }
+                } onCancel: {
+                    pasteRequest = nil
+                }
             }
             .sheet(isPresented: $showScreenshots) { ScreenshotPickerSheet() }
             .onChange(of: env.router.pendingScreenshot) { _, image in
@@ -197,7 +201,7 @@ struct CaptureView: View {
                         Button { showFileImporter = true } label: { SourceTile(symbol: "building.columns", title: "Statement", hint: "CSV · PDF") }
                             .disabled(!model.canCapture)
                             .accessibilityIdentifier("captureStatementButton")
-                        Button { pastedText = UIPasteboard.general.string ?? ""; showPasteSheet = true } label: { SourceTile(symbol: "doc.on.clipboard", title: "Paste text") }
+                        Button { pasteRequest = PasteRequest(text: Self.pasteFixture ?? UIPasteboard.general.string ?? "") } label: { SourceTile(symbol: "doc.on.clipboard", title: "Paste text") }
                             .disabled(!model.canCapture)
                             .accessibilityIdentifier("capturePasteButton")
                         SourceTile(symbol: "square.and.arrow.up", title: "Share Sheet", hint: "From any app")
@@ -255,35 +259,6 @@ struct CaptureView: View {
         }
     }
 
-    private func pasteSheet(_ model: CaptureViewModel) -> some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text("Paste an email, receipt or confirmation. A product link works too.")
-                    .font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary)
-                TextEditor(text: $pastedText)
-                    .font(LeverFont.mono)
-                    .scrollContentBackground(.hidden)
-                    .padding(Spacing.sm)
-                    .frame(minHeight: 220)
-                    .background(LeverColor.surface, in: RoundedRectangle(cornerRadius: Radius.md))
-                    .accessibilityIdentifier("pasteTextEditor")
-                Button("Analyse") {
-                    showPasteSheet = false
-                    let text = pastedText
-                    Task { await model.process(text: text) }
-                }
-                .buttonStyle(.primary)
-                .disabled(pastedText.trimmingCharacters(in: .whitespacesAndNewlines).count < 4)
-                .accessibilityIdentifier("pasteAnalyseButton")
-            }
-            .padding(Spacing.md)
-            .leverScreenBackground()
-            .navigationTitle("Paste text")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Cancel") { showPasteSheet = false } } }
-        }
-    }
-
     private func failure(_ message: String, _ model: CaptureViewModel) -> some View {
         VStack(spacing: Spacing.lg) {
             Spacer()
@@ -300,6 +275,74 @@ struct CaptureView: View {
             }
         }
         .padding(Spacing.lg)
+    }
+}
+
+extension CaptureView {
+    /// UI tests pass `-paste-fixture statement` to pre-fill the paste sheet deterministically (typing multi-line text is flaky).
+    static var pasteFixture: String? {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-ui-testing"), let i = args.firstIndex(of: "-paste-fixture"), i + 1 < args.count else { return nil }
+        switch args[i + 1] {
+        case "statement":
+            return """
+            Account Statement
+            Date,Narration,Withdrawal Amt,Deposit Amt
+            01/06/2026,UPI-NETFLIX.COM,1199.00,
+            01/07/2026,UPI-NETFLIX.COM,1199.00,
+            01/08/2026,UPI-NETFLIX.COM,1499.00,
+            03/08/2026,UPI-SPOTIFY,119.00,
+            01/07/2026,UPI-SPOTIFY,119.00,
+            """
+        default:
+            return nil
+        }
+    }
+}
+
+/// Sheet payload — item-based presentation guarantees the sheet sees the text it was opened with.
+struct PasteRequest: Identifiable {
+    let id = UUID()
+    let text: String
+}
+
+/// Owns its own text state so the Analyse button's enabled state always matches what's in the editor.
+struct PasteSheetView: View {
+    @State private var text: String
+    let onAnalyse: (String) -> Void
+    let onCancel: () -> Void
+
+    init(initialText: String, onAnalyse: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
+        _text = State(initialValue: initialText)
+        self.onAnalyse = onAnalyse
+        self.onCancel = onCancel
+    }
+
+    private var isValid: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).count >= 4 }
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("Paste an email, receipt, confirmation or a bank statement. A product link works too.")
+                    .font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary)
+                TextEditor(text: $text)
+                    .font(LeverFont.mono)
+                    .scrollContentBackground(.hidden)
+                    .padding(Spacing.sm)
+                    .frame(minHeight: 220)
+                    .background(LeverColor.surface, in: RoundedRectangle(cornerRadius: Radius.md))
+                    .accessibilityIdentifier("pasteTextEditor")
+                Button("Analyse") { onAnalyse(text) }
+                    .buttonStyle(.primary)
+                    .disabled(!isValid)
+                    .accessibilityIdentifier("pasteAnalyseButton")
+            }
+            .padding(Spacing.md)
+            .leverScreenBackground()
+            .navigationTitle("Paste text")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Cancel", action: onCancel) } }
+        }
     }
 }
 

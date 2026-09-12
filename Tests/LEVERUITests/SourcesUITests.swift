@@ -3,15 +3,13 @@ import XCTest
 final class SourcesUITests: XCTestCase {
     func testSourcesScreenAndStatementPasteFlow() {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing", "-pro"]
+        app.launchArguments = ["-ui-testing", "-pro", "-paste-fixture", "statement"]
         app.launch()
         app.tabBars.buttons["Capture"].tap()
         app.buttons["capturePasteButton"].tap()
-        let editor = app.textViews["pasteTextEditor"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 5))
-        editor.tap()
-        editor.typeText("Account Statement\nDate,Narration,Withdrawal Amt,Deposit Amt\n01/06/2026,UPI-NETFLIX.COM,1199.00,\n01/07/2026,UPI-NETFLIX.COM,1199.00,\n01/08/2026,UPI-NETFLIX.COM,1499.00,\n03/08/2026,UPI-SPOTIFY,119.00,\n01/07/2026,UPI-SPOTIFY,119.00,\n")
-        app.buttons["pasteAnalyseButton"].tap()
+        let analyse = app.buttons["pasteAnalyseButton"]
+        XCTAssertTrue(analyse.waitForExistence(timeout: 5))
+        analyse.tap()
         let importButton = app.buttons["statementImportButton"]
         XCTAssertTrue(importButton.waitForExistence(timeout: 15))
         let shot = XCUIScreen.main.screenshot()

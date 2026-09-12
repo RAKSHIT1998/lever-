@@ -149,7 +149,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0048F0A94E155C667710F9BD /* LEVER.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LEVER.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0048F0A94E155C667710F9BD /* LEVER.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LEVER.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00C33FBFF05C77B19900C095 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		038B6B829D8216C7B7940DE8 /* Enums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
 		0624A75CE8216D07EED82F6F /* ActionPlanGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionPlanGenerator.swift; sourceTree = "<group>"; };
@@ -174,7 +174,7 @@
 		46D0D5BC9534EF41E7262C74 /* AmountParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountParser.swift; sourceTree = "<group>"; };
 		4A7826E8BF19C35378699750 /* Opportunity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Opportunity.swift; sourceTree = "<group>"; };
 		4DCDBEEB369BDF081E43A6EB /* IntelligenceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceProvider.swift; sourceTree = "<group>"; };
-		4E4D09B1BE3F1CF5EDB9D84D /* Products.storekit */ = {isa = PBXFileReference; path = Products.storekit; sourceTree = "<group>"; };
+		4E4D09B1BE3F1CF5EDB9D84D /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		4F4CEC7B78E9381A63689442 /* NegotiationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NegotiationView.swift; sourceTree = "<group>"; };
 		51416E1D01FB6EB3E150EA7F /* CaptureViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureViewModel.swift; sourceTree = "<group>"; };
 		532E8465550784CE592D6AF4 /* DateParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateParser.swift; sourceTree = "<group>"; };
@@ -185,7 +185,7 @@
 		61298BEA3D71FCDD7CE4D81A /* DocumentParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentParser.swift; sourceTree = "<group>"; };
 		6289D7D56D39A9C3AB3F4B03 /* DocumentScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
 		64A314F4C44C60DB3DDA32D5 /* MoneyAmount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyAmount.swift; sourceTree = "<group>"; };
-		64DFA0078458A2BA66EF32CB /* LEVERWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LEVERWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		64DFA0078458A2BA66EF32CB /* LEVERWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LEVERWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		67BAEE97CB2310EF412481B7 /* OpportunityEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpportunityEngine.swift; sourceTree = "<group>"; };
 		67EE41461BF5842864607D4E /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		687F80D79F596F965D120F61 /* FightForMeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FightForMeView.swift; sourceTree = "<group>"; };
@@ -203,7 +203,7 @@
 		97C26F93893A8C6663D55668 /* OpportunityContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpportunityContext.swift; sourceTree = "<group>"; };
 		999BAC4908D652005A135211 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		9A799124A11794B79425ABDD /* CalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculationTests.swift; sourceTree = "<group>"; };
-		9F59F52B6DBC19F1EF80EEC2 /* LEVERShareExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LEVERShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F59F52B6DBC19F1EF80EEC2 /* LEVERShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LEVERShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F805238E15A866B6DFF5D14 /* LEVERApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LEVERApp.swift; sourceTree = "<group>"; };
 		9FCCA7D412133E8C07530EC3 /* SavingsEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsEvent.swift; sourceTree = "<group>"; };
 		A66CCF5FEA8307A7D150EA67 /* StoredDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredDocument.swift; sourceTree = "<group>"; };
@@ -1033,6 +1033,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Widgets/LEVERWidgets.entitlements;
+				DEVELOPMENT_TEAM = 48TGY734WW;
 				INFOPLIST_FILE = Widgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1148,6 +1149,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/LEVERShareExtension.entitlements;
+				DEVELOPMENT_TEAM = 48TGY734WW;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1168,8 +1170,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LEVER/Resources/LEVER.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 48TGY734WW;
 				INFOPLIST_FILE = LEVER/Resources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lever.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1197,6 +1203,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/LEVERShareExtension.entitlements;
+				DEVELOPMENT_TEAM = 48TGY734WW;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1286,6 +1293,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Widgets/LEVERWidgets.entitlements;
+				DEVELOPMENT_TEAM = 48TGY734WW;
 				INFOPLIST_FILE = Widgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1306,8 +1314,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LEVER/Resources/LEVER.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 48TGY734WW;
 				INFOPLIST_FILE = LEVER/Resources/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.lever.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

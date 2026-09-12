@@ -1,0 +1,119 @@
+import Foundation
+import SwiftData
+import Observation
+
+/// Composition root. Everything the features need is injected from here — no global singletons in feature code.
+@MainActor
+@Observable
+final class AppEnvironment {
+    let container: ModelContainer
+    let repository: PurchaseRepository
+    let intelligence: IntelligenceProvider
+    let notifications: NotificationScheduling
+    let store: StoreService
+    let biometrics: BiometricAuthenticating
+    let analytics: LocalAnalyticsService
+    let priceMonitor: PriceMonitoring
+    let inbox: InboxImporter
+    let files: DocumentFileStore
+    let router = AppRouter()
+
+    /// Set by the biometric gate; sensitive screens check this.
+    var isUnlocked = true
+    var pendingInboxCount = 0
+    var launchedForUITests = false
+
+    init(container: ModelContainer, intelligence: IntelligenceProvider, notifications: NotificationScheduling, store: StoreService, biometrics: BiometricAuthenticating, priceMonitor: PriceMonitoring, files: DocumentFileStore) {
+        self.container = container
+        self.intelligence = intelligence
+        self.notifications = notifications
+        self.store = store
+        self.biometrics = biometrics
+        self.priceMonitor = priceMonitor
+        self.files = files
+        self.analytics = LocalAnalyticsService()
+        self.inbox = InboxImporter()
+        self.repository = PurchaseRepository(
+            context: container.mainContext,
+            intelligence: intelligence,
+            policies: MerchantDirectory(),
+            notifications: notifications,
+            files: files,
+            analytics: analytics
+        )
+        analytics.isEnabled = repository.settings().analyticsEnabled
+    }
+
+    /// Production wiring.
+    static func live() -> AppEnvironment {
+        let arguments = ProcessInfo.processInfo.arguments
+        let uiTesting = arguments.contains("-ui-testing")
+        let container: ModelContainer
+        do {
+            container = try ModelContainerFactory.make(inMemory: uiTesting)
+        } catch {
+            // A corrupt store must never brick the app: fall back to memory and let the user re-import.
+            container = (try? ModelContainerFactory.make(inMemory: true)) ?? { fatalError("SwiftData unavailable: \(error)") }()
+        }
+        let env = AppEnvironment(
+            container: container,
+            intelligence: LocalIntelligenceProvider(),
+            notifications: NotificationService(),
+            store: StoreService(),
+            biometrics: uiTesting ? AlwaysAllowBiometrics() : BiometricAuthService(),
+            priceMonitor: ManualPriceMonitor(),
+            files: DocumentFileStore()
+        )
+        env.launchedForUITests = uiTesting
+        if uiTesting {
+            env.store.debugOverridePro = arguments.contains("-pro") ? true : nil
+            let settings = env.repository.settings()
+            settings.hasCompletedOnboarding = !arguments.contains("-onboarding")
+            if arguments.contains("-sample-data") {
+                SampleDataSeeder.seedIfNeeded(env.repository, force: true)
+            }
+        }
+        return env
+    }
+
+    /// In-memory environment for previews and tests.
+    static func preview(seeded: Bool = true) -> AppEnvironment {
+        guard let container = try? ModelContainerFactory.make(inMemory: true) else {
+            preconditionFailure("In-memory SwiftData container could not be created for previews/tests.")
+        }
+        let env = AppEnvironment(
+            container: container,
+            intelligence: LocalIntelligenceProvider(),
+            notifications: NoopNotifications(),
+            store: StoreService(),
+            biometrics: AlwaysAllowBiometrics(),
+            priceMonitor: ManualPriceMonitor(),
+            files: DocumentFileStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent("LEVERPreview", isDirectory: true))
+        )
+        env.repository.settings().hasCompletedOnboarding = true
+        if seeded { SampleDataSeeder.seedIfNeeded(env.repository, force: true) }
+        return env
+    }
+
+    var settings: AppSettings { repository.settings() }
+    var currencyCode: String { repository.profile().currencyCode }
+
+    func refreshInboxCount() {
+        pendingInboxCount = inbox.pending().count
+    }
+}
+
+/// Notification scheduler that records instead of scheduling — previews and tests.
+final class NoopNotifications: NotificationScheduling, @unchecked Sendable {
+    private let lock = NSLock()
+    private var scheduled: [String: Date] = [:]
+    var granted = true
+
+    func requestAuthorization() async -> Bool { granted }
+    func authorizationGranted() async -> Bool { granted }
+    func schedule(identifier: String, title: String, body: String, at date: Date) async { lock.withLock { scheduled[identifier] = date } }
+    func cancel(identifiers: [String]) async { lock.withLock { identifiers.forEach { scheduled.removeValue(forKey: $0) } } }
+    func cancelAll() async { lock.withLock { scheduled.removeAll() } }
+    func pendingIdentifiers() async -> [String] { lock.withLock { Array(scheduled.keys) } }
+    var count: Int { lock.withLock { scheduled.count } }
+}

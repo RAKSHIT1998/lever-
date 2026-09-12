@@ -1,0 +1,10 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+build/
+*.xcresult
+.DS_Store
+# Secrets — never commit keys. Cloud endpoints are configured at runtime.
+*.env
+Secrets.swift

@@ -110,6 +110,22 @@ final class CaptureViewModel {
 
     func process(inbox item: InboxItem) async {
         pendingInbox = item
+        if item.kind == .transfer {
+            guard let url = item.fileURL else { return fail("That shared purchase couldn't be read.") }
+            do {
+                let purchase = try await env.repository.importTransfer(fileURL: url)
+                env.inbox.consume(item)
+                pendingInbox = nil
+                env.refreshInboxCount()
+                savedPurchase = purchase
+                foundOpportunities = OpportunityRanker.rank(purchase.openOpportunities) { $0.priorityScore }
+                phase = .result
+                Haptics.scanSucceeded()
+            } catch {
+                fail(error.localizedDescription)
+            }
+            return
+        }
         guard let (input, file) = env.inbox.captureInput(for: item) else {
             env.inbox.consume(item)
             env.refreshInboxCount()

@@ -50,6 +50,7 @@
 		5900C594F7090C35B1C94097 /* StoredDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66CCF5FEA8307A7D150EA67 /* StoredDocument.swift */; };
 		597C6814347F4FBD8CC36FAD /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9AFF91F366EF0DEC4C70E71 /* WidgetSnapshot.swift */; };
 		653C7753C9703A612172A716 /* LeverIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2575670B5117B2022B56B59E /* LeverIntents.swift */; };
+		6974AC1ACAFDED951585B5D8 /* PurchaseRepository+Family.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0EAD672A7792F1ECC3CC75C /* PurchaseRepository+Family.swift */; };
 		6A0BEDDD0E8BBD544D96FB97 /* PurchaseProtectionRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80451DA5D69EA7582F99BF74 /* PurchaseProtectionRule.swift */; };
 		6AEBFF42AC36975A6D333888 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32890B491F23B5B8F20D13E /* AppGroup.swift */; };
 		6CAB361014ECB77666D56A06 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FCEB76B87BD795A40AB40C /* Subscription.swift */; };
@@ -62,6 +63,7 @@
 		8152C94034049DC6DD9F0F54 /* StoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB437BF9A267020937B5E60 /* StoreService.swift */; };
 		83B4C4DD1DC06C5D0C97665C /* StatementImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AD6CF10EF50614DD4ABA50 /* StatementImporter.swift */; };
 		84165CBC3AFCEDA9AE1799CA /* Warranty.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A855C086A3FA2B2FE2B644 /* Warranty.swift */; };
+		84FD947696937BD7CE7D7B8A /* PurchaseTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E18FF2B28481F95D6CC9EC /* PurchaseTransfer.swift */; };
 		85E2F20EBCFF542B9ABA4F0F /* LEVERWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 64DFA0078458A2BA66EF32CB /* LEVERWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8603967CC87B04CAC63D2E1A /* SavingsEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FCCA7D412133E8C07530EC3 /* SavingsEvent.swift */; };
 		86D95E8FC8C0F9A23056BF33 /* DateMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152296DDE4774BE96073556 /* DateMath.swift */; };
@@ -95,6 +97,7 @@
 		C3D525487A856B025312AD71 /* PriceMonitorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D06E1B8F7AF65CC3AA6799A /* PriceMonitorService.swift */; };
 		C665A58046F22EB4CB643420 /* InboxItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EFE32DC74313E9FE3C5EF /* InboxItem.swift */; };
 		C6A63D87BB2BDE0C1D8BC8E7 /* ClaimGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3965D73EAD3F63ABA9EF5C59 /* ClaimGenerator.swift */; };
+		CFDCB4C4ACA5C2D94BE614C4 /* FamilyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5DD9E3E4B98900BDC751BE /* FamilyView.swift */; };
 		CFEFCF7DDD1739A62DCDE46B /* PurchaseDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A33A55111796E6B70E52FC /* PurchaseDocument.swift */; };
 		D047D22366174B6891F8A565 /* Monogram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65384D6954394F9EAE9983E1 /* Monogram.swift */; };
 		D624156256EBB55087B2F2BF /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228728BCDC955472BD8C811 /* ShareViewController.swift */; };
@@ -188,10 +191,12 @@
 		26A43C646EE878EEA133E836 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		279DDC180746D21FCAAB9E7A /* LEVERWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LEVERWidgets.swift; sourceTree = "<group>"; };
 		285A11756F8FE0C486962EE9 /* Badges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges.swift; sourceTree = "<group>"; };
+		2E5DD9E3E4B98900BDC751BE /* FamilyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyView.swift; sourceTree = "<group>"; };
 		30F8E1392F7390364AB7888E /* SourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourcesView.swift; sourceTree = "<group>"; };
 		312F94A9435FCE7B8FE71E53 /* Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layout.swift; sourceTree = "<group>"; };
 		3211D7CFB388EFB45088D7AF /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		37D09B1DE636443A19AFCAD7 /* DocumentFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFileStore.swift; sourceTree = "<group>"; };
+		37E18FF2B28481F95D6CC9EC /* PurchaseTransfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseTransfer.swift; sourceTree = "<group>"; };
 		3965D73EAD3F63ABA9EF5C59 /* ClaimGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimGenerator.swift; sourceTree = "<group>"; };
 		3E0FEB9FC7ACEB3FF0FF9CB3 /* InsuranceRenewalRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsuranceRenewalRule.swift; sourceTree = "<group>"; };
 		438D9B9C28F7294323976C18 /* PublicPagePriceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicPagePriceMonitor.swift; sourceTree = "<group>"; };
@@ -246,6 +251,7 @@
 		AE09FF3D31AAF47C706EC4C6 /* ReturnDeadlineRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnDeadlineRule.swift; sourceTree = "<group>"; };
 		AEA1D3B563FB113D0FACF6D9 /* NegotiationAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NegotiationAssistant.swift; sourceTree = "<group>"; };
 		B0C7EB1CAE78943E058D2F4D /* LEVERUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LEVERUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0EAD672A7792F1ECC3CC75C /* PurchaseRepository+Family.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PurchaseRepository+Family.swift"; sourceTree = "<group>"; };
 		B370508A19ACCF1CB1EB06C5 /* SubscriptionRenewalRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionRenewalRule.swift; sourceTree = "<group>"; };
 		B380C566E972FF9271CF1EB3 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		B8BA520F9BDF1B0BF1A5C2DB /* LEVERUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LEVERUITests.swift; sourceTree = "<group>"; };
@@ -448,6 +454,7 @@
 			isa = PBXGroup;
 			children = (
 				FE3A64456AADB3CDDEF87CBB /* Capture */,
+				91B3F9F7AF7CDE9B181E95DB /* Family */,
 				3384CB362DAF2FB68506706D /* Home */,
 				6FC606C1D5DBB4A960224440 /* Negotiation */,
 				72283B443F27660EDF0B4547 /* Onboarding */,
@@ -489,6 +496,7 @@
 				37D09B1DE636443A19AFCAD7 /* DocumentFileStore.swift */,
 				15531EDE25870A9868C2BD49 /* ModelContainerFactory.swift */,
 				CD800386AEE99FF8A7F43517 /* PurchaseRepository.swift */,
+				B0EAD672A7792F1ECC3CC75C /* PurchaseRepository+Family.swift */,
 				D3213942DE2129FAD119FDE2 /* PurchaseRepository+Sources.swift */,
 			);
 			path = Storage;
@@ -596,6 +604,14 @@
 			path = Widgets;
 			sourceTree = "<group>";
 		};
+		91B3F9F7AF7CDE9B181E95DB /* Family */ = {
+			isa = PBXGroup;
+			children = (
+				2E5DD9E3E4B98900BDC751BE /* FamilyView.swift */,
+			);
+			path = Family;
+			sourceTree = "<group>";
+		};
 		9422CBD98B402B6AF2965D1F /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -692,6 +708,7 @@
 			children = (
 				67EE41461BF5842864607D4E /* Protocols.swift */,
 				8CE8E77035C81A3860D8CAB1 /* Analytics */,
+				FD254AD71E0A84F2E7FA9573 /* Family */,
 				BAD913CA1461EA66CBF4B616 /* Inbox */,
 				0F5F8774C22A40A2CFF222EF /* Notifications */,
 				0FC8E2873AB610BA3351D474 /* Policies */,
@@ -767,6 +784,14 @@
 				C14DF2E83CF02A06C4A0A9E3 /* Services */,
 			);
 			path = LEVER;
+			sourceTree = "<group>";
+		};
+		FD254AD71E0A84F2E7FA9573 /* Family */ = {
+			isa = PBXGroup;
+			children = (
+				37E18FF2B28481F95D6CC9EC /* PurchaseTransfer.swift */,
+			);
+			path = Family;
 			sourceTree = "<group>";
 		};
 		FE3A64456AADB3CDDEF87CBB /* Capture */ = {
@@ -1018,6 +1043,7 @@
 				1099B602F3320C02CC7AA4F6 /* DocumentScannerView.swift in Sources */,
 				F3497EE578C6F15BE94FE284 /* DuplicateChargeRule.swift in Sources */,
 				4ABB595224ABF2CD431A815F /* Enums.swift in Sources */,
+				CFDCB4C4ACA5C2D94BE614C4 /* FamilyView.swift in Sources */,
 				4F4CE7F7723B5B0AF32AB5C4 /* FeeDetectionRule.swift in Sources */,
 				5670A1F7DB63904DBA176040 /* FightForMeView.swift in Sources */,
 				4DEE90A3DBC396F8762EB4B3 /* Haptics.swift in Sources */,
@@ -1058,8 +1084,10 @@
 				5794B883933BD754E2F74AD5 /* PurchaseDetailView.swift in Sources */,
 				CFEFCF7DDD1739A62DCDE46B /* PurchaseDocument.swift in Sources */,
 				6A0BEDDD0E8BBD544D96FB97 /* PurchaseProtectionRule.swift in Sources */,
+				6974AC1ACAFDED951585B5D8 /* PurchaseRepository+Family.swift in Sources */,
 				115F939DEA4A4A86479D782F /* PurchaseRepository+Sources.swift in Sources */,
 				359F34BDEA0840200111183F /* PurchaseRepository.swift in Sources */,
+				84FD947696937BD7CE7D7B8A /* PurchaseTransfer.swift in Sources */,
 				FDF92D2A14A2F8E266724B83 /* RegexHelpers.swift in Sources */,
 				D9517BE10F9F7074D89F13C1 /* ResaleEstimator.swift in Sources */,
 				7EA8C0DD26EC9C6B5F4A3F53 /* ReturnDeadlineRule.swift in Sources */,

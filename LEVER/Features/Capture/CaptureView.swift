@@ -239,10 +239,10 @@ struct CaptureView: View {
                     Task { await model.process(inbox: item) }
                 } label: {
                     HStack {
-                        Image(systemName: item.kind == .pdf ? "doc.richtext" : item.kind == .image ? "photo" : "text.alignleft")
+                        Image(systemName: item.kind == .pdf ? "doc.richtext" : item.kind == .image ? "photo" : item.kind == .transfer ? "person.2.fill" : "text.alignleft")
                             .foregroundStyle(LeverColor.inkSecondary)
                         VStack(alignment: .leading) {
-                            Text(item.kind == .url ? "Link" : item.kind.rawValue.capitalized).font(LeverFont.headline)
+                            Text(item.kind == .url ? "Link" : item.kind == .transfer ? "Shared by family" : item.kind.rawValue.capitalized).font(LeverFont.headline)
                             Text(item.createdAt.formatted(.relative(presentation: .named))).font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)
                         }
                         Spacer()

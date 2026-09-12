@@ -64,6 +64,8 @@ struct SettingsView: View {
                 Section("Sources") {
                     NavigationLink("How LEVER knows what you spend") { SourcesView() }
                         .accessibilityIdentifier("sourcesLink")
+                    NavigationLink("Family vault") { FamilyView() }
+                        .accessibilityIdentifier("familyLink")
                 }
 
                 Section("Privacy") {

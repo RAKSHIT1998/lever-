@@ -78,7 +78,8 @@ final class ShareViewController: UIViewController {
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { [weak self] item, _ in
                 guard let url = item as? URL, let data = try? Data(contentsOf: url) else { return self?.loadFinished() ?? () }
                 let ext = url.pathExtension.lowercased()
-                if ext == "pdf" { self?.handle(data: data, kind: .pdf, ext: "pdf") }
+                if ext == "leverpurchase" { self?.handle(data: data, kind: .transfer, ext: "leverpurchase") }
+                else if ext == "pdf" { self?.handle(data: data, kind: .pdf, ext: "pdf") }
                 else if ["jpg", "jpeg", "png", "heic"].contains(ext) { self?.handle(data: data, kind: .image, ext: "jpg") }
                 else if let text = String(data: data, encoding: .utf8) { self?.handle(text: text, kind: .text) }
                 else { self?.loadFinished() }

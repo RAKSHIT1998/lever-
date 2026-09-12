@@ -41,6 +41,7 @@ struct PurchaseDetailView: View {
                 priceHistory
                 documents
                 timeline
+                familySection
                 Button("Delete purchase", role: .destructive) { showDeleteConfirm = true }
                     .font(LeverFont.callout.weight(.medium)).frame(maxWidth: .infinity)
             }
@@ -193,6 +194,29 @@ struct PurchaseDetailView: View {
                     }
                     .buttonStyle(.compact(LeverColor.inkSecondary))
                 }
+            }
+            .leverCard()
+        }
+    }
+
+    private var familySection: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            SectionHeader(title: "Family")
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                if let by = purchase.sharedBy {
+                    Label("Shared with you by \(by)", systemImage: "person.2.fill").font(LeverFont.callout)
+                } else if purchase.householdID != nil {
+                    Label("In your household vault", systemImage: "person.2.fill").font(LeverFont.callout)
+                } else {
+                    Text("Warranties, insurance and big purchases are family business. Send this record to a household member's LEVER.")
+                        .font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary)
+                }
+                ShareLink(item: SharedPurchaseFile(transfer: env.repository.shareBundle(for: purchase)), preview: SharePreview(purchase.title, image: Image(systemName: "shield.checkered"))) {
+                    Label("Share with family", systemImage: "square.and.arrow.up").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.secondary)
+                Text("Sent as a .leverpurchase file over AirDrop, Messages or Files — receipts included, nothing via a server.")
+                    .font(.caption2).foregroundStyle(LeverColor.inkTertiary)
             }
             .leverCard()
         }

@@ -60,6 +60,16 @@ struct LEVERApp: App {
 extension AppEnvironment {
     /// Deep links: lever://capture, lever://inbox, lever://savings, lever://opportunity/<uuid>, lever://purchase/<uuid>
     func handle(url: URL) {
+        if url.isFileURL, url.pathExtension.lowercased() == "leverpurchase" {
+            Task {
+                if let purchase = try? await repository.importTransfer(fileURL: url) {
+                    router.selectedTab = .vault
+                    router.pendingPurchaseID = purchase.id
+                    Haptics.scanSucceeded()
+                }
+            }
+            return
+        }
         guard url.scheme == AppGroup.urlScheme else { return }
         let host = url.host ?? ""
         let id = url.pathComponents.dropFirst().first.flatMap(UUID.init)

@@ -2,7 +2,7 @@ import Foundation
 
 /// Constants and storage locations shared between the main app, the Share Extension and the widgets.
 enum AppGroup {
-    static let identifier = "group.com.lever.app"
+    static let identifier = "group.com.rakshit1998.lever"
     static let urlScheme = "lever"
 
     /// The shared container. Falls back to the process's own Application Support directory when the

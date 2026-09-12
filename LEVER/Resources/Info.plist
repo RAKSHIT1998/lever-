@@ -26,7 +26,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.lever.app</string>
+			<string>com.rakshit1998.lever</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>lever</string>

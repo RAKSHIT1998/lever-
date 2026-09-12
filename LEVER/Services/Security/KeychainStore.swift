@@ -5,7 +5,7 @@ import Security
 struct KeychainStore: Sendable {
     let service: String
 
-    init(service: String = "com.lever.app") {
+    init(service: String = "com.rakshit1998.lever") {
         self.service = service
     }
 

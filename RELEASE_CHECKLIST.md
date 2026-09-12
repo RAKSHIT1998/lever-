@@ -7,7 +7,7 @@
 - [x] UI tests pass (onboarding, capture → review → magic moment, home cards, opportunity → savings confirmation, paywall, settings/privacy)
 
 ## Before first App Store submission
-- [ ] Set `DEVELOPMENT_TEAM` in `project.yml`; register App Group `group.com.lever.app` and enable it on all three bundle IDs (`com.lever.app`, `.share`, `.widgets`)
+- [ ] Set `DEVELOPMENT_TEAM` in `project.yml`; register App Group `group.com.rakshit1998.lever` and enable it on all three bundle IDs (`com.rakshit1998.lever`, `.share`, `.widgets`)
 - [ ] Create in-app purchases in App Store Connect with the exact IDs `lever_pro_monthly`, `lever_pro_yearly`, `lever_pro_lifetime`; prices are never hardcoded — localised pricing (incl. India) comes from StoreKit
 - [ ] Add a 1024×1024 app icon to `Assets.xcassets/AppIcon`
 - [ ] Add real privacy policy + terms URLs (paywall currently links Apple's standard EULA)

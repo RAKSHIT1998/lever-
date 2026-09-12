@@ -59,7 +59,7 @@ struct WidgetWordmark: View {
 
 struct PotentialSavingsWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "com.lever.widget.savings", provider: SnapshotProvider()) { entry in
+        StaticConfiguration(kind: "com.rakshit1998.lever.widget.savings", provider: SnapshotProvider()) { entry in
             PotentialSavingsView(snapshot: entry.snapshot)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
@@ -108,7 +108,7 @@ struct PotentialSavingsView: View {
 
 struct MoneyAtRiskWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "com.lever.widget.risk", provider: SnapshotProvider()) { entry in
+        StaticConfiguration(kind: "com.rakshit1998.lever.widget.risk", provider: SnapshotProvider()) { entry in
             MoneyAtRiskView(snapshot: entry.snapshot)
                 .containerBackground(.fill.tertiary, for: .widget)
         }

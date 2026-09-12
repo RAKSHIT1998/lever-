@@ -4,7 +4,7 @@ import os
 /// Local-only analytics. Logs event names to the unified log; never document content.
 /// Swap in a network implementation behind the same protocol when needed.
 final class LocalAnalyticsService: AnalyticsTracking, @unchecked Sendable {
-    private let logger = Logger(subsystem: "com.lever.app", category: "analytics")
+    private let logger = Logger(subsystem: "com.rakshit1998.lever", category: "analytics")
     private let lock = NSLock()
     private var _enabled = true
     private var _recent: [(AnalyticsEvent, Date)] = []

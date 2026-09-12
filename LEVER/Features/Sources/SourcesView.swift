@@ -79,8 +79,10 @@ struct SourcesView: View {
                     if let priceCheckResult { Text(priceCheckResult).font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary) }
                 }
 
-                source(symbol: "envelope", title: "Email", status: .available, detail: "Order confirmations and renewal notices live in your inbox. Open one in Mail, tap Share → LEVER. Automatic inbox import (Gmail, IMAP) is on the roadmap and will be opt-in.") {
-                    EmptyView()
+                source(symbol: "envelope", title: "Email (Gmail)", status: env.gmail.isConnected ? .on : .available, detail: env.gmail.isConfigured ? "Scan the last 90 days of receipts, orders and renewals. Read-only, parsed on this iPhone." : "Order confirmations and renewals live in your inbox. Share one from Mail today, or connect Gmail for a 90-day scan (needs a one-time OAuth client ID).") {
+                    NavigationLink { EmailImportView() } label: { Text(env.gmail.isConnected ? "Scan inbox" : "Set up email import") }
+                        .buttonStyle(.compact)
+                        .accessibilityIdentifier("emailImportLink")
                 }
 
                 source(symbol: "bell.badge", title: "SMS bank alerts", status: .notPossible, detail: "iOS doesn't let apps read messages. Long-press a bank SMS → Share → LEVER, or screenshot it and let the watcher catch it.") {

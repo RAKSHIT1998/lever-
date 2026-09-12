@@ -57,6 +57,11 @@ CAPTURE → `IntelligenceProvider.extractDocument` → `DocumentReviewView` (use
 ## How it learns about spending
 See [HOW_IT_WORKS.md](HOW_IT_WORKS.md). Short version: camera/share sheet, an opt-in screenshot watcher, bank/card statement import with automatic recurring-charge detection, Apple Wallet via FinanceKit (entitlement pending), daily price re-checks of pasted product pages, and repeat-charge detection across the vault — all on-device.
 
+## Beyond the receipt
+- **Resale intelligence** — depreciation-model estimates for electronics, labelled as estimates.
+- **Family vault** — share any purchase as a `.leverpurchase` file (AirDrop/Messages/Files); it imports into a household member's LEVER with receipts and warranties.
+- **Gmail import** — 90-day purchase-scoped scan with read-only OAuth (you supply the client ID).
+
 ## Engagement that respects the user
 Deep-linking reminders, a 48-hour Live Activity for the most urgent deadline, and a weekly digest that only fires when there is something at stake. No "come back" notifications, ever.
 

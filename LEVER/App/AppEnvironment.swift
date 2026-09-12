@@ -22,6 +22,7 @@ final class AppEnvironment {
     let wallet = WalletTransactionSource()
     let calendar = CalendarExporter()
     let notificationDelegate = NotificationDelegate()
+    let gmail = GmailImportSource()
 
     /// New screenshots noticed since the last check (only when the watcher is enabled).
     var pendingScreenshotCount = 0

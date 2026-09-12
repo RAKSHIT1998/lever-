@@ -22,6 +22,8 @@
 - [ ] Request the FinanceKit entitlement (`com.apple.developer.financekit`) from Apple; until granted, Wallet shows "not enabled for this build"
 - [ ] Enable Background Modes → Background fetch on the app target in App Store Connect capabilities (Info.plist already declares `BGTaskSchedulerPermittedIdentifiers`)
 - [ ] Verify Photos (screenshot watcher) and Calendar (write-only) prompts on device; both are opt-in and only requested when used
+- [ ] Create a Google Cloud OAuth client (iOS, bundle `com.rakshit1998.lever`, Gmail API enabled) and paste the client ID in Settings → Sources → Email; Google's OAuth verification is required before public release with the gmail.readonly scope
+- [ ] Verify `.leverpurchase` files open in LEVER from Files, Messages and AirDrop on device (document type declared in Info.plist)
 - [ ] Test statement import with real CSV/PDF exports from 2–3 Indian banks (HDFC, ICICI, SBI) and one card issuer
 
 ## Product / trust

@@ -20,6 +20,9 @@ struct InboxImporter {
         case .url:
             guard let text = item.text, let url = URL(string: text) else { return nil }
             return (.url(url), nil)
+        case .transfer:
+            // Family bundles are imported directly by the repository, not run through extraction.
+            return nil
         }
     }
 

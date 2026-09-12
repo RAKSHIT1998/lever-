@@ -205,11 +205,24 @@ struct DeadlineLiveActivity: Widget {
             } compactLeading: {
                 Image(systemName: "clock.badge.exclamationmark").foregroundStyle(laneColor(context.state.lane))
             } compactTrailing: {
-                Text(context.state.deadline, style: .timer).monospacedDigit().frame(width: 52)
+                compactCountdown(to: context.state.deadline)
             } minimal: {
                 Image(systemName: "clock.badge.exclamationmark").foregroundStyle(laneColor(context.state.lane))
             }
             .widgetURL(URL(string: "lever://opportunity/\(context.attributes.opportunityID.uuidString)"))
+        }
+    }
+
+    /// "23h" / "3d" when far out; a live mm:ss timer only inside the last hour — the compact slot is tiny.
+    @ViewBuilder
+    private func compactCountdown(to deadline: Date) -> some View {
+        let seconds = deadline.timeIntervalSinceNow
+        if seconds <= 3600 {
+            Text(deadline, style: .timer).monospacedDigit().frame(width: 44)
+        } else if seconds < 48 * 3600 {
+            Text("\(Int(seconds / 3600))h").font(.caption.weight(.bold)).monospacedDigit()
+        } else {
+            Text("\(Int(seconds / 86400))d").font(.caption.weight(.bold)).monospacedDigit()
         }
     }
 

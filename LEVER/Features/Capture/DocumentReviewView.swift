@@ -19,7 +19,7 @@ struct DocumentReviewView: View {
     @State private var isSubscription: Bool
     @State private var cycle: BillingCycle
 
-    init(document: PurchaseDocument, sourceDescription: String, onConfirm: @escaping (PurchaseDocument) -> Void, onCancel: @escaping () -> Void) {
+    init(document: PurchaseDocument, sourceDescription: String, startEditing: Bool = false, onConfirm: @escaping (PurchaseDocument) -> Void, onCancel: @escaping () -> Void) {
         _doc = State(initialValue: document)
         self.sourceDescription = sourceDescription
         self.onConfirm = onConfirm
@@ -34,14 +34,14 @@ struct DocumentReviewView: View {
         _warrantyMonths = State(initialValue: document.warranties.first?.months ?? 0)
         _isSubscription = State(initialValue: document.subscription != nil)
         _cycle = State(initialValue: document.subscription?.billingCycle ?? .monthly)
-        _editing = State(initialValue: !document.hasUsableCore)
+        _editing = State(initialValue: startEditing || !document.hasUsableCore)
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(doc.hasUsableCore ? "I found:" : "Tell me about it.")
+                    Text(doc.hasUsableCore && !editing ? "I found:" : (doc.hasUsableCore ? "Check the details." : "Tell me about it."))
                         .font(LeverFont.display)
                     HStack(spacing: 6) {
                         Text(sourceDescription)

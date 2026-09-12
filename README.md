@@ -57,6 +57,9 @@ CAPTURE → `IntelligenceProvider.extractDocument` → `DocumentReviewView` (use
 ## How it learns about spending
 See [HOW_IT_WORKS.md](HOW_IT_WORKS.md). Short version: camera/share sheet, an opt-in screenshot watcher, bank/card statement import with automatic recurring-charge detection, Apple Wallet via FinanceKit (entitlement pending), daily price re-checks of pasted product pages, and repeat-charge detection across the vault — all on-device.
 
+## Engagement that respects the user
+Deep-linking reminders, a 48-hour Live Activity for the most urgent deadline, and a weekly digest that only fires when there is something at stake. No "come back" notifications, ever.
+
 ## Privacy
 Local-first SwiftData store under `NSFileProtectionComplete`; originals stored with complete file protection; Keychain for the installation ID; optional Face ID lock; Privacy Center with export (JSON) and *Delete everything*. Analytics are event names only, logged locally.
 

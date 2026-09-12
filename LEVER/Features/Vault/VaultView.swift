@@ -154,7 +154,7 @@ struct ManualPurchaseSheet: View {
                 if saving {
                     ProcessingView(step: 3)
                 } else {
-                    DocumentReviewView(document: blank, sourceDescription: "Entered by hand") { doc in
+                    DocumentReviewView(document: blank, sourceDescription: "Entered by hand", startEditing: true) { doc in
                         saving = true
                         Task {
                             _ = try? await env.repository.save(document: doc, files: [])

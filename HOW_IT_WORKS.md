@@ -17,6 +17,12 @@ LEVER has no bank login and no server watching your accounts. Spending reaches i
 | **Email inbox import** | Roadmap | Mail → Share → LEVER works today. Automatic Gmail/IMAP import needs OAuth and a privacy review; it will be opt-in and on-device parsing only. |
 | **SMS bank alerts** | Not possible on iOS | Apps cannot read Messages. Long-press → Share → LEVER, or screenshot it and let the watcher catch it. |
 
+## Staying in front of the user (without nagging)
+
+- **Reminders** deep-link to the exact purchase (2 days / 1 day before returns; 30 / 7 days before warranty end; 3 / 1 days before renewals) and show even while the app is open.
+- **Live Activity**: the single most urgent deadline within 48 hours appears on the Lock Screen and in the Dynamic Island with a countdown; it ends itself when resolved or past.
+- **Weekly digest**: one Monday 09:00 notification, scheduled only if the following two weeks hold a real deadline. It names the first one and splits "at stake" from "you could still save".
+
 ## Background work
 
 `com.rakshit1998.lever.refresh` (BGAppRefresh, requested every ~12h; iOS decides actual timing):

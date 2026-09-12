@@ -1,4 +1,5 @@
 import Foundation
+import os
 #if canImport(ActivityKit)
 import ActivityKit
 #endif
@@ -19,7 +20,11 @@ final class LiveActivityManager {
 
     func sync(with opportunities: [Opportunity]) {
         #if canImport(ActivityKit)
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        let logger = Logger(subsystem: "com.rakshit1998.lever", category: "liveactivity")
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            logger.error("Live Activities are disabled for this app")
+            return
+        }
         let existing = Activity<DeadlineActivityAttributes>.activities
         guard let target = Self.candidate(from: opportunities), let deadline = target.deadline else {
             for activity in existing { Task { await activity.end(nil, dismissalPolicy: .immediate) } }
@@ -38,7 +43,12 @@ final class LiveActivityManager {
         } else {
             for other in existing { Task { await other.end(nil, dismissalPolicy: .immediate) } }
             let attributes = DeadlineActivityAttributes(opportunityID: target.id, merchantName: target.merchantName)
-            _ = try? Activity.request(attributes: attributes, content: content, pushType: nil)
+            do {
+                _ = try Activity.request(attributes: attributes, content: content, pushType: nil)
+                logger.error("Started Live Activity for \(target.merchantName, privacy: .public)")
+            } catch {
+                logger.error("Live Activity request failed: \(error.localizedDescription, privacy: .public)")
+            }
         }
         #endif
     }

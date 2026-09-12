@@ -12,6 +12,7 @@ final class PurchaseRepository {
     let notifications: NotificationScheduling
     let files: DocumentFileStore
     let analytics: AnalyticsTracking
+    let liveActivities = LiveActivityManager()
 
     init(context: ModelContext, intelligence: IntelligenceProvider, policies: ReturnPolicyProviding, notifications: NotificationScheduling, files: DocumentFileStore, analytics: AnalyticsTracking) {
         self.context = context
@@ -245,6 +246,17 @@ final class PurchaseRepository {
             await refreshOpportunities(for: purchase)
         }
         publishSnapshot()
+        liveActivities.sync(with: openOpportunities())
+        await scheduleWeeklyDigest()
+    }
+
+    /// One Monday-morning digest, only when the fortnight ahead holds real deadlines.
+    func scheduleWeeklyDigest() async {
+        await notifications.cancel(identifiers: [DigestPlanner.identifier])
+        guard settings().notificationsEnabled else { return }
+        let lite = openOpportunities().compactMap(OpportunitySnapshotLite.init)
+        guard let planned = DigestPlanner.plan(opportunities: lite, currencyCode: profile().currencyCode) else { return }
+        await notifications.schedule(identifier: planned.identifier, title: planned.title, body: planned.body, at: planned.fireDate, userInfo: planned.userInfo)
     }
 
     func ensureActionPlan(for opportunity: Opportunity) async -> ActionPlan? {
@@ -262,6 +274,7 @@ final class PurchaseRepository {
         if status == .resolved || status == .dismissed { opportunity.resolvedAt = .now }
         try? context.save()
         publishSnapshot()
+        liveActivities.sync(with: openOpportunities())
     }
 
     // MARK: - Savings
@@ -322,13 +335,14 @@ final class PurchaseRepository {
         let prefixes = DeadlineNotificationPlanner.prefixes(for: purchase.id)
         await notifications.cancel(identifiers: pending.filter { id in prefixes.contains { id.hasPrefix($0) } })
         for planned in DeadlineNotificationPlanner.plan(for: PurchaseSnapshot(purchase)) {
-            await notifications.schedule(identifier: planned.identifier, title: planned.title, body: planned.body, at: planned.fireDate)
+            await notifications.schedule(identifier: planned.identifier, title: planned.title, body: planned.body, at: planned.fireDate, userInfo: planned.userInfo)
         }
     }
 
     func rescheduleAllReminders() async {
         await notifications.cancelAll()
         for purchase in allPurchases() { await scheduleReminders(for: purchase) }
+        await scheduleWeeklyDigest()
     }
 
     // MARK: - Deletion & export

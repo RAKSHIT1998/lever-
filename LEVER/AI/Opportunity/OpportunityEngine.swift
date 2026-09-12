@@ -18,6 +18,7 @@ struct OpportunityEngine: Sendable {
         DuplicateChargeRule(),
         FeeDetectionRule(),
         PurchaseProtectionRule(),
+        InsuranceRenewalRule(),
     ])
 
     func detect(_ context: OpportunityContext) -> [OpportunityDraft] {

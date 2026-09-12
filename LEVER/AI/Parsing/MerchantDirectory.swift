@@ -12,6 +12,35 @@ struct MerchantDirectory: ReturnPolicyProviding {
         let policyNote: String?
     }
 
+    /// Where to manage or cancel a subscription. Only well-known, stable account pages — never guessed.
+    static let manageURLs: [String: String] = [
+        "Netflix": "https://www.netflix.com/youraccount",
+        "Spotify": "https://www.spotify.com/account/subscription/",
+        "Prime Video": "https://www.amazon.in/gp/primecentral",
+        "Amazon": "https://www.amazon.in/gp/primecentral",
+        "JioHotstar": "https://www.hotstar.com/in/subscribe/my-account",
+        "YouTube Premium": "https://www.youtube.com/paid_memberships",
+        "Apple One": "https://apps.apple.com/account/subscriptions",
+        "Adobe": "https://account.adobe.com/plans",
+        "Microsoft": "https://account.microsoft.com/services",
+        "Google": "https://one.google.com/settings",
+        "OpenAI": "https://chatgpt.com/#settings/Subscription",
+        "Notion": "https://www.notion.so/my-account",
+        "Dropbox": "https://www.dropbox.com/account/plan",
+        "Canva": "https://www.canva.com/settings/billing-and-teams",
+        "Airtel": "https://www.airtel.in/myaccount",
+        "Jio": "https://www.jio.com/selfcare/login/",
+        "Vi": "https://www.myvi.in/postpaid/my-account",
+        "ACT Fibernet": "https://selfcare.actcorp.in/",
+        "Tata Play": "https://www.tataplay.com/mytataplay",
+    ]
+
+    static func manageURL(for merchant: String) -> URL? {
+        let entry = MerchantDirectory().entry(named: merchant)
+        let key = entry?.name ?? merchant
+        return manageURLs[key].flatMap(URL.init(string:))
+    }
+
     static let entries: [Entry] = [
         Entry(name: "Amazon", aliases: ["amazon.in", "amazon.com", "amzn"], category: .retail, domain: "amazon.in", typicalReturnDays: 10, policyNote: "Amazon.in lists 7–10 day return/replacement windows for most categories; some items are non-returnable."),
         Entry(name: "Flipkart", aliases: ["flipkart.com"], category: .retail, domain: "flipkart.com", typicalReturnDays: 7, policyNote: "Flipkart's typical window is 7 days for most categories; varies by product."),

@@ -7,6 +7,7 @@ struct VaultView: View {
     @State private var category: VaultCategory = .all
     @State private var query = ""
     @State private var selected: Purchase?
+    @State private var showManualEntry = false
 
     private var filtered: [Purchase] {
         VaultFilter.apply(purchases, category: category, query: query)
@@ -16,8 +17,12 @@ struct VaultView: View {
         NavigationStack {
             Group {
                 if purchases.isEmpty {
-                    EmptyState(symbol: "archivebox", title: "Your purchase history will live here.", message: "Every receipt becomes a long-lived record: return window, warranty, price history, claims.", actionTitle: "Scan a purchase") {
-                        env.router.selectedTab = .capture
+                    VStack(spacing: 0) {
+                        EmptyState(symbol: "archivebox", title: "Your purchase history will live here.", message: "Every receipt becomes a long-lived record: return window, warranty, price history, claims.", actionTitle: "Scan a purchase") {
+                            env.router.selectedTab = .capture
+                        }
+                        Button("Or add one by hand") { showManualEntry = true }
+                            .font(LeverFont.callout.weight(.medium)).foregroundStyle(LeverColor.inkSecondary)
                     }
                 } else {
                     List {
@@ -72,7 +77,15 @@ struct VaultView: View {
             }
             .leverScreenBackground()
             .navigationTitle("Vault")
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { ProfileButton() } }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showManualEntry = true } label: { Image(systemName: "plus") }
+                        .accessibilityLabel("Add a purchase manually")
+                        .accessibilityIdentifier("vaultAddButton")
+                }
+                ToolbarItem(placement: .topBarTrailing) { ProfileButton() }
+            }
+            .sheet(isPresented: $showManualEntry) { ManualPurchaseSheet() }
             .navigationDestination(item: $selected) { PurchaseDetailView(purchase: $0) }
             .onChange(of: env.router.pendingPurchaseID) { _, id in
                 guard let id, let match = purchases.first(where: { $0.id == id }) else { return }
@@ -125,5 +138,45 @@ enum VaultFilter {
         case .insurance: p.documentType == .insurance || p.merchantCategory == .insurance
         case .documents: !p.documents.isEmpty
         }
+    }
+}
+
+
+/// No document? Type it in. Uses the same review screen, so the purchase graph and rules are identical.
+struct ManualPurchaseSheet: View {
+    @Environment(AppEnvironment.self) private var env
+    @Environment(\.dismiss) private var dismiss
+    @State private var saving = false
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if saving {
+                    ProcessingView(step: 3)
+                } else {
+                    DocumentReviewView(document: blank, sourceDescription: "Entered by hand") { doc in
+                        saving = true
+                        Task {
+                            _ = try? await env.repository.save(document: doc, files: [])
+                            env.settings.capturesUsed += 1
+                            Haptics.scanSucceeded()
+                            dismiss()
+                        }
+                    } onCancel: { dismiss() }
+                }
+            }
+            .leverScreenBackground()
+            .navigationTitle("Add purchase")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    private var blank: PurchaseDocument {
+        var doc = PurchaseDocument(rawText: "", currencyCode: env.currencyCode)
+        doc.documentType = .receipt
+        doc.purchaseDate = .now
+        doc.providerName = "Entered manually"
+        doc.fieldConfidences = ["purchaseDate": 1.0]
+        return doc
     }
 }

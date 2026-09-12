@@ -47,6 +47,8 @@
 	<array>
 		<string>fetch</string>
 	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>LEVER can notice new screenshots of receipts, renewals and bookings and offer to read them. Screenshots are only read when you tap, and never leave this iPhone.</string>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>

@@ -182,6 +182,9 @@ struct PurchaseDetailView: View {
                     }
                     .buttonStyle(.compact)
                     .accessibilityIdentifier("markUnusedButton")
+                    if let manage = MerchantDirectory.manageURL(for: purchase.merchantName) {
+                        Link(destination: manage) { Text("Manage") }.buttonStyle(.compact(LeverColor.inkSecondary))
+                    }
                     Button(sub.status == .cancelled ? "Reactivate" : "Mark cancelled") {
                         sub.status = sub.status == .cancelled ? .active : .cancelled
                         try? env.container.mainContext.save()

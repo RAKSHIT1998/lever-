@@ -170,5 +170,77 @@ struct LEVERWidgetBundle: WidgetBundle {
     var body: some Widget {
         PotentialSavingsWidget()
         MoneyAtRiskWidget()
+        #if canImport(ActivityKit)
+        DeadlineLiveActivity()
+        #endif
     }
 }
+
+// MARK: - Live Activity
+
+#if canImport(ActivityKit)
+import ActivityKit
+
+struct DeadlineLiveActivity: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: DeadlineActivityAttributes.self) { context in
+            lockScreen(context)
+                .activityBackgroundTint(Color(red: 0.06, green: 0.07, blue: 0.09))
+                .activitySystemActionForegroundColor(.white)
+        } dynamicIsland: { context in
+            DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+                    Text(context.attributes.merchantName).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                }
+                DynamicIslandExpandedRegion(.trailing) {
+                    Text(context.state.deadline, style: .relative).font(.caption.weight(.semibold)).monospacedDigit()
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    HStack {
+                        Text(context.state.title).font(.subheadline.weight(.semibold)).lineLimit(2)
+                        Spacer()
+                        if !context.state.amountText.isEmpty { Text(context.state.amountText).font(.subheadline.weight(.bold)).foregroundStyle(laneColor(context.state.lane)) }
+                    }
+                }
+            } compactLeading: {
+                Image(systemName: "clock.badge.exclamationmark").foregroundStyle(laneColor(context.state.lane))
+            } compactTrailing: {
+                Text(context.state.deadline, style: .timer).monospacedDigit().frame(width: 52)
+            } minimal: {
+                Image(systemName: "clock.badge.exclamationmark").foregroundStyle(laneColor(context.state.lane))
+            }
+            .widgetURL(URL(string: "lever://opportunity/\(context.attributes.opportunityID.uuidString)"))
+        }
+    }
+
+    private func laneColor(_ lane: String) -> Color {
+        switch lane {
+        case "urgent": WidgetPalette.urgent
+        case "protection": Color(red: 0.98, green: 0.80, blue: 0.30)
+        default: WidgetPalette.money
+        }
+    }
+
+    private func lockScreen(_ context: ActivityViewContext<DeadlineActivityAttributes>) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text("LEVER").font(.system(size: 10, weight: .heavy, design: .rounded)).tracking(1.5).foregroundStyle(.secondary)
+                    Text(context.attributes.merchantName.uppercased()).font(.system(size: 10, weight: .bold)).tracking(0.8).foregroundStyle(.secondary)
+                }
+                Text(context.state.title).font(.subheadline.weight(.semibold)).foregroundStyle(.white).lineLimit(2)
+                if !context.state.amountText.isEmpty {
+                    Text(context.state.amountText).font(.system(.title3, design: .rounded).weight(.bold)).foregroundStyle(laneColor(context.state.lane))
+                }
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("closes in").font(.caption2).foregroundStyle(.secondary)
+                Text(context.state.deadline, style: .timer).font(.system(.title3, design: .rounded).weight(.bold)).monospacedDigit().foregroundStyle(.white).frame(width: 96, alignment: .trailing)
+            }
+        }
+        .padding(16)
+        .widgetURL(URL(string: "lever://opportunity/\(context.attributes.opportunityID.uuidString)"))
+    }
+}
+#endif

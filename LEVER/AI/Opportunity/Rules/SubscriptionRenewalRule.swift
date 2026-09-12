@@ -7,6 +7,8 @@ struct SubscriptionRenewalRule: OpportunityRule {
     func evaluate(_ context: OpportunityContext) -> [OpportunityDraft] {
         let p = context.purchase
         guard let sub = p.subscription, sub.status != .cancelled else { return [] }
+        // Insurance policies get their own, comparison-oriented rule.
+        guard p.documentType != .insurance && p.category != .insurance else { return [] }
         var drafts: [OpportunityDraft] = []
         let cycleCost = RuleSupport.amountText(sub.price, p.currencyCode) + sub.cycle.shortSuffix
         let annual = SubscriptionMath.annualCost(price: sub.price, cycle: sub.cycle)

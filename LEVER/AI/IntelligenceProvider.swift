@@ -23,7 +23,8 @@ struct LocalIntelligenceProvider: IntelligenceProvider {
         case .pdf(let data):
             recognized = try await recognizer.extractText(fromPDF: data)
         case .text(let text):
-            recognized = RecognizedText(lines: text.components(separatedBy: .newlines), averageConfidence: 1.0)
+            let cleaned = HTMLText.strip(text)
+            recognized = RecognizedText(lines: cleaned.components(separatedBy: .newlines), averageConfidence: 1.0)
         case .url(let url):
             // MVP: we don't fetch pages. The URL is stored for price tracking; the user adds details.
             sourceURL = url
@@ -73,5 +74,26 @@ struct RemoteIntelligenceProvider: IntelligenceProvider {
 
     func generateActionPlan(for opportunity: OpportunitySnapshot) async throws -> ActionPlanDraft {
         try await fallback.generateActionPlan(for: opportunity)
+    }
+}
+
+
+/// Shared emails and web pages often arrive as HTML. Turn them into readable lines without a browser engine.
+enum HTMLText {
+    static func strip(_ input: String) -> String {
+        guard input.contains("<") && (input.range(of: #"<\s*(html|body|div|p|br|table|tr|td|span|a|img|meta|style|script)\b"#, options: [.regularExpression, .caseInsensitive]) != nil) else { return input }
+        var text = input
+        text = text.replacingOccurrences(of: #"(?is)<(script|style|head)[^>]*>.*?</\1>"#, with: " ", options: .regularExpression)
+        text = text.replacingOccurrences(of: #"(?i)<br\s*/?>|</(p|div|tr|li|h[1-6]|table|section)>"#, with: "\n", options: .regularExpression)
+        text = text.replacingOccurrences(of: #"(?i)</t[dh]>"#, with: "  ", options: .regularExpression)
+        text = text.replacingOccurrences(of: #"<[^>]+>"#, with: " ", options: .regularExpression)
+        let entities: [String: String] = ["&nbsp;": " ", "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": "\"", "&#39;": "'", "&rsquo;": "'", "&ndash;": "–", "&mdash;": "—", "&#8377;": "₹", "&#x20B9;": "₹", "&euro;": "€", "&pound;": "£", "&copy;": "©"]
+        for (entity, value) in entities { text = text.replacingOccurrences(of: entity, with: value) }
+        text = text.replacingOccurrences(of: #"&#(\d+);"#, with: " ", options: .regularExpression)
+        return text
+            .components(separatedBy: .newlines)
+            .map { $0.squashedWhitespace }
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n")
     }
 }

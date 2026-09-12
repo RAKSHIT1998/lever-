@@ -131,7 +131,9 @@ struct OpportunityDetailView: View {
                         }
                         .buttonStyle(.compact)
                         ShareLink(item: message) { Text("Share") }.buttonStyle(.compact(LeverColor.inkSecondary))
-                        if let url = supportURL {
+                        if let manage = MerchantDirectory.manageURL(for: opportunity.merchantName), opportunity.purchase?.subscription != nil {
+                            Link(destination: manage) { Text("Manage subscription") }.buttonStyle(.compact(LeverColor.inkSecondary))
+                        } else if let url = supportURL {
                             Link(destination: url) { Text("Open \(opportunity.merchantName)") }.buttonStyle(.compact(LeverColor.inkSecondary))
                         }
                     }

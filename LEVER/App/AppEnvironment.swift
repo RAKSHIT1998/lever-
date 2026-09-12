@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Observation
+import UserNotifications
 
 /// Composition root. Everything the features need is injected from here — no global singletons in feature code.
 @MainActor
@@ -20,6 +21,7 @@ final class AppEnvironment {
     let screenshots = ScreenshotWatcher()
     let wallet = WalletTransactionSource()
     let calendar = CalendarExporter()
+    let notificationDelegate = NotificationDelegate()
 
     /// New screenshots noticed since the last check (only when the watcher is enabled).
     var pendingScreenshotCount = 0
@@ -48,6 +50,15 @@ final class AppEnvironment {
             analytics: analytics
         )
         analytics.isEnabled = repository.settings().analyticsEnabled
+        notificationDelegate.onOpenPurchase = { [weak self] id in
+            self?.router.selectedTab = .vault
+            self?.router.pendingPurchaseID = id
+        }
+        notificationDelegate.onOpenOpportunity = { [weak self] id in
+            self?.router.selectedTab = .home
+            self?.router.pendingOpportunityID = id
+        }
+        UNUserNotificationCenter.current().delegate = notificationDelegate
     }
 
     /// Production wiring.
@@ -131,7 +142,7 @@ final class NoopNotifications: NotificationScheduling, @unchecked Sendable {
 
     func requestAuthorization() async -> Bool { granted }
     func authorizationGranted() async -> Bool { granted }
-    func schedule(identifier: String, title: String, body: String, at date: Date) async { lock.withLock { scheduled[identifier] = date } }
+    func schedule(identifier: String, title: String, body: String, at date: Date, userInfo: [String: String]) async { lock.withLock { scheduled[identifier] = date } }
     func cancel(identifiers: [String]) async { lock.withLock { identifiers.forEach { scheduled.removeValue(forKey: $0) } } }
     func cancelAll() async { lock.withLock { scheduled.removeAll() } }
     func pendingIdentifiers() async -> [String] { lock.withLock { Array(scheduled.keys) } }

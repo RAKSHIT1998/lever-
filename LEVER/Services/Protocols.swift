@@ -67,10 +67,16 @@ struct RecognizedText: Sendable, Equatable {
 protocol NotificationScheduling: Sendable {
     func requestAuthorization() async -> Bool
     func authorizationGranted() async -> Bool
-    func schedule(identifier: String, title: String, body: String, at date: Date) async
+    func schedule(identifier: String, title: String, body: String, at date: Date, userInfo: [String: String]) async
     func cancel(identifiers: [String]) async
     func cancelAll() async
     func pendingIdentifiers() async -> [String]
+}
+
+extension NotificationScheduling {
+    func schedule(identifier: String, title: String, body: String, at date: Date) async {
+        await schedule(identifier: identifier, title: title, body: body, at: date, userInfo: [:])
+    }
 }
 
 // MARK: - Policies

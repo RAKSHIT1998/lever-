@@ -94,8 +94,13 @@ final class Purchase {
         opportunities.filter { $0.status == .open || $0.status == .inProgress }
     }
 
+    /// Only genuine savings/recoveries — never the value of an item merely at stake.
     var potentialSavings: Decimal {
-        openOpportunities.compactMap(\.estimatedSavings).reduce(0, +)
+        openOpportunities.filter(\.countsAsPotentialSaving).compactMap(\.estimatedSavings).reduce(0, +)
+    }
+
+    var hasActiveProtection: Bool {
+        warranties.contains(where: \.isActive) || (returnWindow?.isOpen ?? false)
     }
 
     var latestPriceObservation: PriceObservation? {

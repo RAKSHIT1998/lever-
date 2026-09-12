@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Charts
 
 struct SavingsView: View {
     @Environment(AppEnvironment.self) private var env
@@ -25,6 +26,7 @@ struct SavingsView: View {
                             env.router.selectedTab = .home
                         }
                     } else {
+                        history
                         breakdown
                         if !pending.isEmpty { pendingSection }
                         timeline
@@ -48,20 +50,58 @@ struct SavingsView: View {
 
     private var hero: some View {
         VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Text("SAVED WITH LEVER")
+                .font(.caption2.weight(.bold)).tracking(1.1)
+                .foregroundStyle(LeverColor.inkSecondary)
             MoneyAmount(amount: totals.lifetime, currencyCode: totals.currencyCode, size: .hero, tint: LeverColor.money)
                 .accessibilityIdentifier("lifetimeSaved")
-            Text("saved with LEVER").font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary)
-            if totals.thisMonth > 0 {
-                Text("\(Money.format(totals.thisMonth, code: totals.currencyCode)) this month").font(LeverFont.label).foregroundStyle(LeverColor.ink).padding(.top, Spacing.xxs)
+            HStack(spacing: Spacing.sm) {
+                if totals.thisMonth > 0 {
+                    Label("\(Money.format(totals.thisMonth, code: totals.currencyCode)) this month", systemImage: "calendar")
+                }
+                if totals.pending > 0 {
+                    Label("\(Money.format(totals.pending, code: totals.currencyCode)) awaiting confirmation", systemImage: "hourglass")
+                }
             }
+            .font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)
+            .padding(.top, 2)
         }
         .padding(.top, Spacing.xs)
     }
 
+    /// Six months of confirmed savings. Bars, not a dashboard — one glance tells the story.
+    private var history: some View {
+        let months = SavingsHistory.lastMonths(6, events: confirmed)
+        return VStack(alignment: .leading, spacing: Spacing.sm) {
+            SectionHeader(title: "Last 6 months")
+            Chart(months) { month in
+                BarMark(x: .value("Month", month.label), y: .value("Saved", month.total))
+                    .foregroundStyle(month.isCurrent ? LeverColor.money : LeverColor.money.opacity(0.35))
+                    .cornerRadius(6)
+                    .annotation(position: .top, alignment: .center) {
+                        if month.total > 0 {
+                            Text(Money.format(Decimal(month.total), code: totals.currencyCode, compact: true))
+                                .font(.caption2.weight(.semibold)).monospacedDigit()
+                                .foregroundStyle(LeverColor.inkSecondary)
+                        }
+                    }
+            }
+            .chartYAxis(.hidden)
+            .chartXAxis {
+                AxisMarks { _ in
+                    AxisValueLabel().font(.caption2).foregroundStyle(LeverColor.inkSecondary)
+                }
+            }
+            .frame(height: 150)
+            .leverCard()
+            .accessibilityLabel("Savings by month")
+        }
+    }
+
     private var breakdown: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.xs) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.xs) {
             ForEach(SavingsKind.allCases, id: \.self) { kind in
-                SavingsCard(title: kind.displayName, amount: totals.byKind[kind] ?? 0, currencyCode: totals.currencyCode)
+                SavingsCard(title: kind.displayName, amount: totals.byKind[kind] ?? 0, currencyCode: totals.currencyCode, symbol: kind.symbol)
             }
         }
     }
@@ -130,6 +170,30 @@ struct PendingSavingSheet: View {
             Text(event.title).font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary)
             Button("Yes, I saved it") { env.repository.confirmSaving(event); Haptics.savingConfirmed(); onDone() }.buttonStyle(.money)
             Button("No") { env.repository.rejectSaving(event); onDone() }.buttonStyle(.secondary)
+        }
+    }
+}
+
+
+/// Month buckets for the savings chart. Pure so it can be tested.
+enum SavingsHistory {
+    struct Month: Identifiable {
+        let id: Date
+        let label: String
+        let total: Double
+        let isCurrent: Bool
+    }
+
+    static func lastMonths(_ count: Int, events: [SavingsEvent], now: Date = .now, calendar: Calendar = .current) -> [Month] {
+        let thisMonth = DateMath.startOfMonth(for: now, calendar: calendar)
+        return (0..<count).reversed().compactMap { offset in
+            guard let start = calendar.date(byAdding: .month, value: -offset, to: thisMonth),
+                  let end = calendar.date(byAdding: .month, value: 1, to: start) else { return nil }
+            let total = events
+                .filter { let d = $0.confirmedAt ?? $0.date; return d >= start && d < end }
+                .map { NSDecimalNumber(decimal: $0.amount).doubleValue }
+                .reduce(0, +)
+            return Month(id: start, label: start.formatted(.dateTime.month(.abbreviated)), total: total, isCurrent: offset == 0)
         }
     }
 }

@@ -130,10 +130,14 @@ struct CaptureView: View {
                     } label: {
                         VStack(spacing: Spacing.sm) {
                             ZStack {
-                                Circle().fill(LeverColor.ink).frame(width: 128, height: 128)
+                                Circle().strokeBorder(LeverColor.hairline, lineWidth: 1).frame(width: 212, height: 212)
+                                Circle().strokeBorder(LeverColor.hairline, lineWidth: 1).frame(width: 170, height: 170)
+                                Circle()
+                                    .fill(LinearGradient(colors: [LeverColor.inkPanelTop, LeverColor.inkPanelBottom], startPoint: .top, endPoint: .bottom))
+                                    .frame(width: 128, height: 128)
                                 Image(systemName: "viewfinder")
-                                    .font(.system(size: 50, weight: .light))
-                                    .foregroundStyle(LeverColor.background)
+                                    .font(.system(size: 48, weight: .light))
+                                    .foregroundStyle(LeverColor.onInk)
                             }
                             .shadow(color: .black.opacity(0.18), radius: 24, y: 12)
                             Text("Scan a receipt, bill or screen")

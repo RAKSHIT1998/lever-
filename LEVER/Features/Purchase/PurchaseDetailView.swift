@@ -62,7 +62,13 @@ struct PurchaseDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(purchase.title.uppercased()).font(.caption.weight(.bold)).tracking(1.2).foregroundStyle(LeverColor.inkSecondary)
+            HStack(spacing: Spacing.sm) {
+                MerchantMonogram(name: purchase.merchantName, category: purchase.merchantCategory, size: 48)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(purchase.title).font(LeverFont.title3).lineLimit(2)
+                    Text(purchase.merchantName).font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)
+                }
+            }
             MoneyAmount(amount: purchase.amount, currencyCode: purchase.currencyCode, size: .hero)
             HStack(spacing: Spacing.xs) {
                 Label(purchase.documentType.displayName, systemImage: purchase.documentType.symbol)

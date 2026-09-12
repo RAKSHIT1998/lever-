@@ -53,10 +53,12 @@ struct OnboardingView: View {
 
     private var promise: some View {
         screen {
+            LeakStackIllustration()
+                .padding(.bottom, Spacing.sm)
             Text("LEVER")
                 .font(.caption.weight(.heavy)).tracking(2).foregroundStyle(LeverColor.inkSecondary)
             Text("What if you stopped leaving money on the table?")
-                .font(LeverFont.hero(40))
+                .font(LeverFont.hero(38))
                 .foregroundStyle(LeverColor.ink)
                 .fixedSize(horizontal: false, vertical: true)
             Text("Receipts, renewals, bookings, warranties. LEVER reads the fine print and finds the money you're about to lose.")
@@ -158,5 +160,49 @@ struct OnboardingView: View {
             .buttonStyle(.primary)
             .accessibilityIdentifier("onboardingFinish")
         }
+    }
+}
+
+
+/// Three tilted mini-cards showing the kinds of leaks LEVER catches. Pure decoration — sample copy only.
+struct LeakStackIllustration: View {
+    @State private var shown = false
+
+    private let cards: [(String, String, String, Color)] = [
+        ("arrow.triangle.2.circlepath", "Netflix renews tomorrow", "Save ₹3,600/yr", LeverColor.opportunity),
+        ("airplane", "Hotel price dropped", "Recover ₹7,400", LeverColor.money),
+        ("shield.checkered", "MacBook warranty ends in 21 days", "₹1,49,990 protected", LeverColor.protection),
+    ]
+
+    var body: some View {
+        ZStack {
+            ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
+                HStack(spacing: Spacing.sm) {
+                    ZStack {
+                        Circle().fill(card.3.opacity(0.14))
+                        Image(systemName: card.0).font(.footnote.weight(.semibold)).foregroundStyle(card.3)
+                    }
+                    .frame(width: 32, height: 32)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(card.1).font(.footnote.weight(.semibold)).foregroundStyle(LeverColor.ink).lineLimit(1)
+                        Text(card.2).font(.caption2.weight(.semibold)).foregroundStyle(card.3)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(Spacing.sm)
+                .frame(width: 280)
+                .background(LeverColor.surface, in: RoundedRectangle(cornerRadius: Radius.md, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: Radius.md, style: .continuous).strokeBorder(LeverColor.hairline))
+                .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
+                .rotationEffect(.degrees(shown ? Double(index - 1) * 2.5 : 0))
+                .offset(x: shown ? Double(index - 1) * 10 : 0, y: shown ? Double(index - 1) * 58 : 0)
+                .opacity(shown ? 1 : 0)
+                .animation(Motion.reveal.delay(Double(index) * 0.08), value: shown)
+            }
+        }
+        .frame(height: 200)
+        .frame(maxWidth: .infinity)
+        .onAppear { shown = true }
+        .accessibilityHidden(true)
     }
 }

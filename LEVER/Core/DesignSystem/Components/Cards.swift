@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Home feed card. Colour-coded lane, plain-language title, one number, one action.
+/// The Home feed card. Merchant identity, plain-language title, one number, one action.
 struct OpportunityCard: View {
     let opportunity: Opportunity
     let action: () -> Void
@@ -9,17 +9,24 @@ struct OpportunityCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                LaneTag(lane: lane)
+            HStack(spacing: Spacing.sm) {
+                MerchantMonogram(name: opportunity.merchantName, category: opportunity.purchase?.merchantCategory ?? .other, size: 38)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(opportunity.merchantName)
+                        .font(LeverFont.headline).foregroundStyle(LeverColor.ink).lineLimit(1)
+                    LaneTag(lane: lane)
+                }
                 Spacer()
                 if let deadline = opportunity.deadline {
                     DeadlineBadge(date: deadline)
                 }
             }
+
             Text(opportunity.title)
-                .font(LeverFont.title)
+                .font(LeverFont.title3)
                 .foregroundStyle(LeverColor.ink)
                 .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 2)
 
             Text(opportunity.detail)
                 .font(LeverFont.callout)
@@ -27,32 +34,26 @@ struct OpportunityCard: View {
                 .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
 
-            if let savings = opportunity.estimatedSavings, savings > 0 {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(savingsLabel)
-                        .font(LeverFont.caption)
-                        .foregroundStyle(LeverColor.inkSecondary)
-                    MoneyAmount(amount: savings, currencyCode: opportunity.currencyCode, size: .large, tint: LeverColor.money)
-                }
-                .padding(.top, Spacing.xxs)
-            }
+            Divider().padding(.vertical, Spacing.xxs)
 
-            HStack {
-                ConfidenceBadge(confidence: opportunity.confidence)
+            HStack(alignment: .lastTextBaseline) {
+                if let savings = opportunity.estimatedSavings, savings > 0 {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(savingsLabel)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(LeverColor.inkSecondary)
+                        MoneyAmount(amount: savings, currencyCode: opportunity.currencyCode, size: .large, tint: lane == .urgent ? LeverColor.ink : LeverColor.money)
+                    }
+                } else {
+                    ConfidenceBadge(confidence: opportunity.confidence)
+                }
                 Spacer()
                 Button(actionTitle, action: action)
                     .buttonStyle(.compact(LeverColor.lane(lane)))
             }
-            .padding(.top, Spacing.xxs)
         }
         .leverCard(padding: Spacing.lg)
-        .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(LeverColor.lane(lane))
-                .frame(width: 3)
-                .padding(.vertical, Spacing.lg)
-        }
-        .contentShape(RoundedRectangle(cornerRadius: Radius.md))
+        .contentShape(RoundedRectangle(cornerRadius: Radius.lg))
         .onTapGesture(perform: action)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
@@ -83,16 +84,22 @@ struct SavingsCard: View {
     let amount: Decimal
     let currencyCode: String
     var tint: Color = LeverColor.ink
+    var symbol: String? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(LeverFont.caption)
-                .foregroundStyle(LeverColor.inkSecondary)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 5) {
+                if let symbol {
+                    Image(systemName: symbol).font(.caption2.weight(.semibold)).foregroundStyle(tint == LeverColor.ink ? LeverColor.inkTertiary : tint)
+                }
+                Text(title.uppercased())
+                    .font(.caption2.weight(.bold)).tracking(0.6)
+                    .foregroundStyle(LeverColor.inkSecondary)
+            }
             MoneyAmount(amount: amount, currencyCode: currencyCode, size: .medium, tint: tint, compact: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .leverCard(padding: Spacing.sm)
+        .leverCard(padding: Spacing.sm, radius: Radius.md)
     }
 }
 
@@ -101,7 +108,7 @@ struct PurchaseRow: View {
 
     var body: some View {
         HStack(spacing: Spacing.sm) {
-            DocumentThumbnail(purchase: purchase)
+            MerchantMonogram(name: purchase.merchantName, category: purchase.merchantCategory, size: 44)
             VStack(alignment: .leading, spacing: 3) {
                 Text(purchase.title)
                     .font(LeverFont.headline)
@@ -125,6 +132,10 @@ struct PurchaseRow: View {
                     Text("+\(Money.format(purchase.potentialSavings, code: purchase.currencyCode, compact: true)) possible")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(LeverColor.money)
+                } else if purchase.hasActiveProtection {
+                    Label("Protected", systemImage: "shield.fill")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(LeverColor.inkTertiary)
                 } else if let sub = purchase.subscription {
                     Text(sub.billingCycle.displayName)
                         .font(.caption2)

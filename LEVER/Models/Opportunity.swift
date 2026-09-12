@@ -87,6 +87,10 @@ final class Opportunity {
 
     var lane: OpportunityLane { type.lane }
 
+    /// True when `estimatedSavings` is money the user could gain or avoid losing by acting — not the value of an item
+    /// that is merely at stake (return windows, warranties). Aggregates must never mix the two.
+    var countsAsPotentialSaving: Bool { type.representsSaving }
+
     var daysUntilDeadline: Int? {
         guard let deadline else { return nil }
         return DateMath.days(from: .now, to: deadline)

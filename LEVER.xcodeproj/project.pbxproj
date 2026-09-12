@@ -80,6 +80,7 @@
 		C665A58046F22EB4CB643420 /* InboxItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EFE32DC74313E9FE3C5EF /* InboxItem.swift */; };
 		C6A63D87BB2BDE0C1D8BC8E7 /* ClaimGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3965D73EAD3F63ABA9EF5C59 /* ClaimGenerator.swift */; };
 		CFEFCF7DDD1739A62DCDE46B /* PurchaseDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A33A55111796E6B70E52FC /* PurchaseDocument.swift */; };
+		D047D22366174B6891F8A565 /* Monogram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65384D6954394F9EAE9983E1 /* Monogram.swift */; };
 		D624156256EBB55087B2F2BF /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9228728BCDC955472BD8C811 /* ShareViewController.swift */; };
 		DD14909B6BC0FD6DDA984B5E /* DocumentClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA58A13AA19D5CD932FC6054 /* DocumentClassifier.swift */; };
 		DFE3AEE492A7C7202AF49888 /* InboxItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EFE32DC74313E9FE3C5EF /* InboxItem.swift */; };
@@ -186,6 +187,7 @@
 		6289D7D56D39A9C3AB3F4B03 /* DocumentScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
 		64A314F4C44C60DB3DDA32D5 /* MoneyAmount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyAmount.swift; sourceTree = "<group>"; };
 		64DFA0078458A2BA66EF32CB /* LEVERWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LEVERWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		65384D6954394F9EAE9983E1 /* Monogram.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monogram.swift; sourceTree = "<group>"; };
 		67BAEE97CB2310EF412481B7 /* OpportunityEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpportunityEngine.swift; sourceTree = "<group>"; };
 		67EE41461BF5842864607D4E /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		687F80D79F596F965D120F61 /* FightForMeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FightForMeView.swift; sourceTree = "<group>"; };
@@ -552,6 +554,7 @@
 				852FEB56127D43294384DE74 /* Cards.swift */,
 				312F94A9435FCE7B8FE71E53 /* Layout.swift */,
 				64A314F4C44C60DB3DDA32D5 /* MoneyAmount.swift */,
+				65384D6954394F9EAE9983E1 /* Monogram.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -950,6 +953,7 @@
 				80B1EC4AF755741BFB1C17EE /* ModelContainerFactory.swift in Sources */,
 				515D54FBB274C05483944918 /* Money.swift in Sources */,
 				42E3AF06EB6CF125901C4835 /* MoneyAmount.swift in Sources */,
+				D047D22366174B6891F8A565 /* Monogram.swift in Sources */,
 				41BBA3288BD7A80B2EB44AC9 /* NegotiationAssistant.swift in Sources */,
 				9E8AE8F7AE18B5CCC3663824 /* NegotiationView.swift in Sources */,
 				B259A43B2C31B09B40380037 /* NotificationService.swift in Sources */,

@@ -72,6 +72,9 @@ final class AppEnvironment {
             if arguments.contains("-sample-data") {
                 SampleDataSeeder.seedIfNeeded(env.repository, force: true)
             }
+            if let index = arguments.firstIndex(of: "-tab"), index + 1 < arguments.count, let tab = AppTab(rawValue: arguments[index + 1]) {
+                env.router.selectedTab = tab
+            }
         }
         return env
     }

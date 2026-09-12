@@ -57,8 +57,12 @@ struct OpportunityDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                LaneTag(lane: opportunity.lane)
+            HStack(spacing: Spacing.sm) {
+                MerchantMonogram(name: opportunity.merchantName, category: opportunity.purchase?.merchantCategory ?? .other, size: 44)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(opportunity.merchantName).font(LeverFont.headline)
+                    LaneTag(lane: opportunity.lane)
+                }
                 Spacer()
                 if let deadline = opportunity.deadline { DeadlineBadge(date: deadline, prefix: "Deadline ") }
             }

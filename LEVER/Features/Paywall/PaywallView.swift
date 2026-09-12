@@ -10,7 +10,7 @@ struct PaywallView: View {
     @State private var message: String?
 
     private var found: Decimal {
-        env.repository.openOpportunities().compactMap(\.estimatedSavings).reduce(0, +)
+        env.repository.openOpportunities().filter(\.countsAsPotentialSaving).compactMap(\.estimatedSavings).reduce(0, +)
     }
 
     var body: some View {

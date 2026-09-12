@@ -435,7 +435,7 @@ final class PurchaseRepository {
 
         let snapshot = WidgetSnapshot(
             currencyCode: currency,
-            potentialSavings: open.compactMap(\.estimatedSavings).reduce(0, +),
+            potentialSavings: open.filter(\.countsAsPotentialSaving).compactMap(\.estimatedSavings).reduce(0, +),
             openOpportunities: open.count,
             moneyAtRisk: deadlines.compactMap(\.amount).reduce(0, +),
             deadlinesThisWeek: deadlines,

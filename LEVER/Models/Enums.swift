@@ -170,6 +170,16 @@ enum OpportunityType: String, Codable, CaseIterable {
     }
 }
 
+extension OpportunityType {
+    /// Whether an estimated amount for this type is a saving/recovery (true) or the value at stake / protected (false).
+    var representsSaving: Bool {
+        switch self {
+        case .subscriptionRenewal, .priceDrop, .refund, .negotiation, .duplicateCharge, .feeDetection, .cheaperAlternative, .travelPriceChange, .claimOpportunity: true
+        case .returnDeadline, .warrantyExpiration, .insuranceOpportunity, .purchaseProtection, .maintenance, .unknown: false
+        }
+    }
+}
+
 enum OpportunityLane: String, Codable {
     case urgent, opportunity, protection
 

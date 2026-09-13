@@ -148,9 +148,11 @@ struct GeminiIntelligenceProvider: IntelligenceProvider {
     static func apply(_ e: Extraction, to doc: inout PurchaseDocument, confidence: Double) {
         func weak(_ field: String) -> Bool { (doc.fieldConfidences[field] ?? 0) < 0.8 }
         func date(_ s: String?) -> Date? {
-            guard let s else { return nil }
+            guard let s, !s.isEmpty else { return nil }
             let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"; f.locale = Locale(identifier: "en_US_POSIX"); f.timeZone = .current
-            return f.date(from: s).flatMap { Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: $0) }
+            if let iso = f.date(from: s) { return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: iso) }
+            // Models don't always obey the format instruction ("9 September 2026"); reuse the strict local date parser.
+            return DateParser.explicitDates(in: s).first
         }
         if let m = e.merchant, !m.isEmpty, doc.merchant == nil || weak("merchant") {
             doc.merchant = MerchantDirectory().entry(named: m)?.name ?? m

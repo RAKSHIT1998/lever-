@@ -11,6 +11,9 @@ struct HomeView: View {
     @State private var showScreenshots = false
     @State private var showSources = false
     @State private var otherCurrencyApprox: Decimal?
+    @State private var toolDestination: Tool?
+    @State private var showTools = false
+    @State private var insightPurchase: Purchase?
 
     private var open: [Opportunity] {
         OpportunityRanker.rank(allOpportunities.filter { $0.isVisibleInFeed && $0.currencyCode == env.currencyCode }) { $0.priorityScore }
@@ -56,7 +59,9 @@ struct HomeView: View {
                         }
                     }
 
+                    insightsSection
                     thisMonth
+                    toolsRow
                     sourcesRow
 
                     Button {
@@ -100,6 +105,9 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showScreenshots) { ScreenshotPickerSheet() }
             .navigationDestination(isPresented: $showSources) { SourcesView() }
+            .navigationDestination(isPresented: $showTools) { ToolsView() }
+            .navigationDestination(item: $toolDestination) { ToolRouter(tool: $0) }
+            .navigationDestination(item: $insightPurchase) { PurchaseDetailView(purchase: $0) }
         }
     }
 
@@ -175,6 +183,68 @@ struct HomeView: View {
 
     private var connectedSources: Int {
         1 + (env.settings.screenshotWatchEnabled ? 1 : 0) + (env.settings.walletConnected ? 1 : 0) + (purchases.contains { $0.productURL != nil } ? 1 : 0) + (purchases.contains { $0.subscription?.source.lowercased().contains("statement") ?? false } ? 1 : 0)
+    }
+
+    private var insights: [Insight] {
+        Array(InsightEngine.generate(VaultSummary(purchases: purchases, currencyCode: env.currencyCode)).prefix(3))
+    }
+
+    /// Patterns across the vault — softer than leaks, still grounded in the user's own data.
+    @ViewBuilder
+    private var insightsSection: some View {
+        if !insights.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                SectionHeader(title: "Smart suggestions", action: { showTools = true }, actionTitle: "Tools")
+                ForEach(insights) { insight in
+                    Button { act(on: insight) } label: {
+                        HStack(alignment: .top, spacing: Spacing.sm) {
+                            ZStack {
+                                Circle().fill(LeverColor.moneySoft)
+                                Image(systemName: insight.symbol).font(.body.weight(.semibold)).foregroundStyle(LeverColor.money)
+                            }
+                            .frame(width: 36, height: 36)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(insight.title).font(LeverFont.headline).foregroundStyle(LeverColor.ink).multilineTextAlignment(.leading)
+                                Text(insight.detail).font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary).multilineTextAlignment(.leading)
+                            }
+                            Spacer(minLength: 0)
+                            if let title = insight.actionTitle {
+                                Text(title).font(.caption.weight(.bold)).foregroundStyle(LeverColor.money).padding(.top, 8)
+                            }
+                        }
+                        .leverCard(padding: Spacing.sm, radius: Radius.md)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("insightCard")
+                }
+            }
+        }
+    }
+
+    private func act(on insight: Insight) {
+        switch insight.action {
+        case .none: break
+        case .openPurchase(let id): insightPurchase = purchases.first { $0.id == id }
+        case .openTool(let tool): toolDestination = tool
+        case .openSources: showSources = true
+        }
+    }
+
+    private var toolsRow: some View {
+        Button { showTools = true } label: {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "wrench.and.screwdriver").font(.body.weight(.semibold)).foregroundStyle(LeverColor.ink).frame(width: 26)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Tools").font(LeverFont.headline).foregroundStyle(LeverColor.ink)
+                    Text("Subscription audit · Next 30 days · Cost per use · Should I return it? · Ask LEVER").font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary).multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(LeverColor.inkTertiary)
+            }
+            .leverCard(padding: Spacing.sm, radius: Radius.md)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("toolsRow")
     }
 
     /// Where LEVER's knowledge comes from — and an invitation to widen it.

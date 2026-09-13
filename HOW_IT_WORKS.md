@@ -25,6 +25,12 @@ LEVER has no bank login and no server watching your accounts. Spending reaches i
 - **Live Activity**: the single most urgent deadline within 48 hours appears on the Lock Screen and in the Dynamic Island with a countdown; it ends itself when resolved or past.
 - **Weekly digest**: one Monday 09:00 notification, scheduled only if the following two weeks hold a real deadline. It names the first one and splits "at stake" from "you could still save".
 
+## Smart suggestions & tools
+
+`InsightEngine` looks across the whole vault for patterns single-purchase rules miss — recurring total, subscriptions you marked unused, three or more streaming services, price creep, expensive electronics with no coverage or price link, unknown return windows, next-30-day outflow. Each suggestion names its evidence and deep-links to the fix.
+
+Tools: **Subscription audit** (monthly/yearly totals, increases, unused), **Next 30 days** (renewals + deadlines, add all to Calendar), **Cost per use**, **Should I return it?** (used? faulty? cheaper elsewhere? → recommendation), **Ask LEVER** (on-device answers for warranties/renewals/returns/spending/savings; free-form questions go to Gemini with a document-free summary only when cloud is on).
+
 ## Free external services (no backend, no accounts)
 
 | Service | Used for | What leaves the device |

@@ -66,6 +66,7 @@ struct SettingsView: View {
                         .accessibilityIdentifier("sourcesLink")
                     NavigationLink("Family vault") { FamilyView() }
                         .accessibilityIdentifier("familyLink")
+                    NavigationLink("Tools") { ToolsView() }
                 }
 
                 Section("Privacy") {

@@ -17,7 +17,7 @@ The `LEVER` scheme includes the `Products.storekit` configuration so the paywall
 
 ```sh
 # Unit + UI tests
-xcodebuild -project LEVER.xcodeproj -scheme LEVER -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test
+xcodebuild -project LEVER.xcodeproj -scheme LEVER -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -derivedDataPath .build/DerivedData test
 ```
 
 UI-test launch arguments: `-ui-testing` (in-memory store, biometrics auto-pass), `-onboarding`, `-sample-data`, `-pro`.

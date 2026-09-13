@@ -66,6 +66,7 @@ final class MerchantIdentityTests: XCTestCase {
     }
 
     func testShortNamesAreNotLookedUp() async {
-        XCTAssertNil(await MerchantIdentityService().identity(for: "Vi"))
+        let identity = await MerchantIdentityService().identity(for: "Vi")
+        XCTAssertNil(identity)
     }
 }

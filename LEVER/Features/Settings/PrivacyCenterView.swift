@@ -11,6 +11,22 @@ struct PrivacyCenterView: View {
     @State private var showDeleteConfirm = false
     @State private var exportURL: URL?
     @State private var deleted = false
+    @State private var geminiKey = GeminiIntelligenceProvider.storedKey ?? ""
+    @State private var geminiModel = GeminiIntelligenceProvider.storedModel
+    @State private var geminiStatus: String?
+    @State private var testingKey = false
+
+    private func testGemini() async {
+        testingKey = true
+        defer { testingKey = false }
+        let provider = GeminiIntelligenceProvider(apiKey: geminiKey.trimmingCharacters(in: .whitespaces), model: geminiModel.trimmingCharacters(in: .whitespaces))
+        do {
+            let e = try await provider.extract(text: "Amazon.in Order Confirmation\nOrder Total ₹1,499.00\nOrder date: 12 Sep 2026")
+            geminiStatus = e.amount == 1499 ? "Works — read ₹1,499 from a test receipt." : "Works, but the test read looked off (amount \(e.amount.map { "\($0)" } ?? "nil")). Try another model."
+        } catch {
+            geminiStatus = error.localizedDescription
+        }
+    }
 
     var body: some View {
         @Bindable var settings = env.settings
@@ -23,11 +39,34 @@ struct PrivacyCenterView: View {
             }
 
             Section("What's processed by AI") {
-                Label(env.intelligence.processesOnDevice ? "Text recognition and understanding run on this iPhone." : "Documents are sent to \(env.intelligence.name).", systemImage: env.intelligence.processesOnDevice ? "iphone" : "cloud")
+                Label(settings.cloudAIEnabled && geminiKey.isEmpty == false ? "On-device first; Gemini fills gaps when the local read is unsure." : "Text recognition and understanding run entirely on this iPhone.", systemImage: settings.cloudAIEnabled && !geminiKey.isEmpty ? "cloud" : "iphone")
                     .font(LeverFont.callout)
-                Toggle("Allow cloud intelligence", isOn: $settings.cloudAIEnabled)
-                    .disabled(true)
-                Text("Cloud processing isn't available in this version. When it is, it will be off by default, opt-in, and clearly indicated while running. LEVER never uploads documents silently.")
+                Toggle("Cloud intelligence (Google Gemini, free tier)", isOn: Binding(get: { settings.cloudAIEnabled }, set: { on in settings.cloudAIEnabled = on; env.cloudFlag?.isEnabled = on && !geminiKey.isEmpty }))
+                if settings.cloudAIEnabled {
+                    SecureField("Gemini API key", text: $geminiKey)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled().font(LeverFont.mono)
+                        .onChange(of: geminiKey) { _, new in
+                            GeminiIntelligenceProvider.storedKey = new.trimmingCharacters(in: .whitespaces)
+                            env.cloudFlag?.isEnabled = !new.isEmpty
+                            geminiStatus = nil
+                        }
+                    TextField("Model", text: $geminiModel)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled().font(LeverFont.mono)
+                        .onChange(of: geminiModel) { _, new in GeminiIntelligenceProvider.storedModel = new.trimmingCharacters(in: .whitespaces) }
+                    HStack {
+                        Link("Get a free key", destination: URL(string: "https://aistudio.google.com/apikey")!)
+                        Spacer()
+                        Button(testingKey ? "Testing…" : "Test key") { Task { await testGemini() } }.disabled(geminiKey.isEmpty || testingKey)
+                    }
+                    if let geminiStatus { Text(geminiStatus).font(LeverFont.caption).foregroundStyle(geminiStatus.hasPrefix("Works") ? LeverColor.money : LeverColor.urgent) }
+                }
+                Text("What's sent: only the recognised text of a document, only when the on-device parser is unsure, only while this is on. Never images, PDFs, statements or your vault. Your key stays in the Keychain. Google's free tier may use inputs to improve its models — read their terms before enabling.")
+                    .font(.caption2).foregroundStyle(LeverColor.inkTertiary)
+            }
+
+            Section("Merchant logos & rates") {
+                Toggle("Show merchant logos", isOn: Binding(get: { settings.showMerchantLogos }, set: { settings.showMerchantLogos = $0 }))
+                Text("Merchant names (e.g. \"Croma\") are matched to a website via Clearbit's free lookup and the site's icon is fetched from Google/DuckDuckGo favicon services — never amounts or documents. Exchange rates for other-currency totals come from the European Central Bank via frankfurter.dev, with no data sent.")
                     .font(.caption2).foregroundStyle(LeverColor.inkTertiary)
             }
 

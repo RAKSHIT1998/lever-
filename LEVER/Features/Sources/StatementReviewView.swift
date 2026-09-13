@@ -101,7 +101,7 @@ struct StatementReviewView: View {
             Haptics.selection()
         } label: {
             HStack(spacing: Spacing.sm) {
-                MerchantMonogram(name: c.merchantName, category: c.category, size: 40)
+                MerchantAvatar(name: c.merchantName, category: c.category, size: 40)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(c.merchantName).font(LeverFont.headline).foregroundStyle(LeverColor.ink)
                     Text("\(Money.format(c.latestAmount, code: c.currencyCode))\(c.cycle.shortSuffix) · seen \(c.occurrences)×\(c.nextDate.map { " · next \($0.leverShort)" } ?? "")")

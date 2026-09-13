@@ -104,7 +104,7 @@ struct EmailImportView: View {
             if selected.contains(c.id) { selected.remove(c.id) } else { selected.insert(c.id) }
         } label: {
             HStack(alignment: .top, spacing: Spacing.sm) {
-                MerchantMonogram(name: c.document.merchant ?? "?", category: c.document.merchantCategory, size: 38)
+                MerchantAvatar(name: c.document.merchant ?? "?", category: c.document.merchantCategory, size: 38)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(c.document.displayTitle).font(LeverFont.headline).foregroundStyle(LeverColor.ink).lineLimit(2)
                     Text("\(c.message.subject) · \(c.message.date.leverShort)").font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary).lineLimit(1)

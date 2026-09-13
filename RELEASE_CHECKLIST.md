@@ -40,6 +40,11 @@
 - [x] Delete-everything clears store, files, inbox, Keychain, notifications and widget snapshot
 - [x] No secrets in source control (`.gitignore` excludes `Secrets.swift`, `.env`)
 
+## External services to disclose in App Privacy
+- Gemini (opt-in, user key): document text → Google. Declare "Other Usage Data" only if enabled; default off.
+- Clearbit / Google / DuckDuckGo favicons: merchant names/domains. Not linked to identity.
+- frankfurter.dev: currency codes only.
+
 ## Known limitations (v1)
 - Price tracking reads public page metadata only; pages without Open Graph/schema.org price tags fall back to manual entry
 - Apple Wallet import compiles but is inert until Apple grants the FinanceKit entitlement

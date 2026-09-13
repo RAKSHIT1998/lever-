@@ -74,7 +74,7 @@ struct PurchaseDetailView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(spacing: Spacing.sm) {
-                MerchantMonogram(name: purchase.merchantName, category: purchase.merchantCategory, size: 48)
+                MerchantAvatar(name: purchase.merchantName, category: purchase.merchantCategory, size: 48)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(purchase.title).font(LeverFont.title3).lineLimit(2)
                     Text(purchase.merchantName).font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)

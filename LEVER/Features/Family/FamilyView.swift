@@ -49,7 +49,7 @@ struct FamilyView: View {
                     ForEach(shared) { p in
                         NavigationLink { PurchaseDetailView(purchase: p) } label: {
                             HStack {
-                                MerchantMonogram(name: p.merchantName, category: p.merchantCategory, size: 32)
+                                MerchantAvatar(name: p.merchantName, category: p.merchantCategory, size: 32)
                                 VStack(alignment: .leading) {
                                     Text(p.title).font(LeverFont.callout)
                                     Text(p.sharedBy.map { "From \($0)" } ?? "Shared by you").font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)

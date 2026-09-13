@@ -25,6 +25,18 @@ LEVER has no bank login and no server watching your accounts. Spending reaches i
 - **Live Activity**: the single most urgent deadline within 48 hours appears on the Lock Screen and in the Dynamic Island with a countdown; it ends itself when resolved or past.
 - **Weekly digest**: one Monday 09:00 notification, scheduled only if the following two weeks hold a real deadline. It names the first one and splits "at stake" from "you could still save".
 
+## Free external services (no backend, no accounts)
+
+| Service | Used for | What leaves the device |
+|---|---|---|
+| **Google Gemini API** (free tier, *your* key, opt-in) | Fills fields the on-device parser missed or read with low confidence | The recognised text of that one document — never images, PDFs, statements or the vault. Off by default. |
+| **Clearbit Autocomplete** (keyless) | Merchant name → website domain for logos and support links | The merchant name only (e.g. "Croma"). Toggle in Privacy Center. |
+| **Google / DuckDuckGo favicon services** (keyless) | Merchant logos | The merchant's domain. |
+| **frankfurter.dev** (ECB rates, keyless) | "≈" conversion of other-currency opportunities into your home currency | Nothing personal — a currency code. Cached daily. |
+| **Gmail API** (your OAuth client) | Inbox scan | Read-only, purchase-scoped search; parsed on device. |
+
+Everything else — OCR, parsing, rules, storage, reminders, price checks — stays on the iPhone.
+
 ## Background work
 
 `com.rakshit1998.lever.refresh` (BGAppRefresh, requested every ~12h; iOS decides actual timing):

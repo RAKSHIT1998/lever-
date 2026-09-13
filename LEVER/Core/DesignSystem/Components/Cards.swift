@@ -10,7 +10,7 @@ struct OpportunityCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: Spacing.sm) {
-                MerchantMonogram(name: opportunity.merchantName, category: opportunity.purchase?.merchantCategory ?? .other, size: 38)
+                MerchantAvatar(name: opportunity.merchantName, category: opportunity.purchase?.merchantCategory ?? .other, size: 38)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(opportunity.merchantName)
                         .font(LeverFont.headline).foregroundStyle(LeverColor.ink).lineLimit(1)
@@ -110,7 +110,7 @@ struct PurchaseRow: View {
 
     var body: some View {
         HStack(spacing: Spacing.sm) {
-            MerchantMonogram(name: purchase.merchantName, category: purchase.merchantCategory, size: 44)
+            MerchantAvatar(name: purchase.merchantName, category: purchase.merchantCategory, size: 44)
             VStack(alignment: .leading, spacing: 3) {
                 Text(purchase.title)
                     .font(LeverFont.headline)

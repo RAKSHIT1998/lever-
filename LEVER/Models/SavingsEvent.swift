@@ -120,6 +120,7 @@ final class AppSettings {
     var walletConnected: Bool = false
     var lastWalletSync: Date? = nil
     var lastBackgroundRefresh: Date? = nil
+    var showMerchantLogos: Bool = true
 
     init() {
         hasCompletedOnboarding = false

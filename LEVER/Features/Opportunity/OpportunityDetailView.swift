@@ -75,7 +75,7 @@ struct OpportunityDetailView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: Spacing.sm) {
-                MerchantMonogram(name: opportunity.merchantName, category: opportunity.purchase?.merchantCategory ?? .other, size: 44)
+                MerchantAvatar(name: opportunity.merchantName, category: opportunity.purchase?.merchantCategory ?? .other, size: 44)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(opportunity.merchantName).font(LeverFont.headline)
                     LaneTag(lane: opportunity.lane)
@@ -249,7 +249,9 @@ struct OpportunityDetailView: View {
     }
 
     private var supportURL: URL? {
-        guard let domain = opportunity.purchase?.merchant?.domain ?? MerchantDirectory().entry(named: opportunity.merchantName)?.domain else { return nil }
-        return URL(string: "https://\(domain)")
+        let domain = opportunity.purchase?.merchant?.domain
+            ?? MerchantDirectory().entry(named: opportunity.merchantName)?.domain
+            ?? env.merchantIdentity.cachedIdentity(for: opportunity.merchantName)?.domain
+        return domain.flatMap { URL(string: "https://\($0)") }
     }
 }

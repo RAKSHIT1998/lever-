@@ -27,6 +27,9 @@ final class AppEnvironment {
 
     /// New screenshots noticed since the last check (only when the watcher is enabled).
     var pendingScreenshotCount = 0
+    /// Mirrors `settings.cloudAIEnabled` into the Sendable provider without touching SwiftData off the main actor.
+    var cloudFlag: CloudFlag?
+    let merchantIdentity = MerchantIdentityService()
 
     /// Set by the biometric gate; sensitive screens check this.
     var isUnlocked = true
@@ -74,9 +77,10 @@ final class AppEnvironment {
             // A corrupt store must never brick the app: fall back to memory and let the user re-import.
             container = (try? ModelContainerFactory.make(inMemory: true)) ?? { fatalError("SwiftData unavailable: \(error)") }()
         }
+        let cloudFlag = CloudFlag()
         let env = AppEnvironment(
             container: container,
-            intelligence: LocalIntelligenceProvider(),
+            intelligence: HybridIntelligenceProvider(isCloudEnabled: { cloudFlag.isEnabled }),
             notifications: NotificationService(),
             store: StoreService(),
             biometrics: uiTesting ? AlwaysAllowBiometrics() : BiometricAuthService(),
@@ -84,6 +88,8 @@ final class AppEnvironment {
             files: DocumentFileStore()
         )
         env.launchedForUITests = uiTesting
+        cloudFlag.isEnabled = env.settings.cloudAIEnabled && !uiTesting
+        env.cloudFlag = cloudFlag
         if uiTesting {
             // XCUITest waits for animations to settle before every query; none of ours carry meaning in tests.
             UIView.setAnimationsEnabled(false)
@@ -132,6 +138,16 @@ final class AppEnvironment {
         pendingScreenshotCount = screenshots.newScreenshots(since: settings.lastScreenshotCheck).count
     }
 
+}
+
+/// Thread-safe on/off switch shared with the intelligence provider.
+final class CloudFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = false
+    var isEnabled: Bool {
+        get { lock.withLock { value } }
+        set { lock.withLock { value = newValue } }
+    }
 }
 
 enum BackgroundRefresh {

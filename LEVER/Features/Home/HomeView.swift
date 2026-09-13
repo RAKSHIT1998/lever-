@@ -10,6 +10,7 @@ struct HomeView: View {
     @State private var showAll = false
     @State private var showScreenshots = false
     @State private var showSources = false
+    @State private var otherCurrencyApprox: Decimal?
 
     private var open: [Opportunity] {
         OpportunityRanker.rank(allOpportunities.filter { $0.isVisibleInFeed && $0.currencyCode == env.currencyCode }) { $0.priorityScore }
@@ -49,8 +50,9 @@ struct HomeView: View {
                                 .buttonStyle(.secondary)
                         }
                         if otherCurrencyCount > 0 {
-                            Text("\(otherCurrencyCount) more in other currencies — see them in the Vault.")
-                                .font(LeverFont.caption).foregroundStyle(LeverColor.inkTertiary).frame(maxWidth: .infinity)
+                            Text(otherCurrencyApprox.map { "\(otherCurrencyCount) more in other currencies ≈ \(Money.format($0, code: env.currencyCode)) at ECB rates — see them in the Vault." } ?? "\(otherCurrencyCount) more in other currencies — see them in the Vault.")
+                                .font(LeverFont.caption).foregroundStyle(LeverColor.inkTertiary).frame(maxWidth: .infinity).multilineTextAlignment(.center)
+                                .task(id: otherCurrencyCount) { await approximateOtherCurrencies() }
                         }
                     }
 
@@ -192,6 +194,17 @@ struct HomeView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("sourcesRow")
+    }
+
+    /// Sums other-currency potential savings in the home currency using cached ECB rates. Nil when a rate is missing.
+    private func approximateOtherCurrencies() async {
+        let others = allOpportunities.filter { $0.isVisibleInFeed && $0.currencyCode != env.currencyCode && $0.countsAsPotentialSaving }
+        var total: Decimal = 0
+        for o in others {
+            guard let amount = o.estimatedSavings, let converted = await ExchangeRateService.shared.convert(amount, from: o.currencyCode, to: env.currencyCode) else { otherCurrencyApprox = nil; return }
+            total += converted
+        }
+        otherCurrencyApprox = total > 0 ? total : nil
     }
 
     private var greeting: String {

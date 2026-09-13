@@ -88,6 +88,11 @@ final class AppEnvironment {
             files: DocumentFileStore()
         )
         env.launchedForUITests = uiTesting
+        if GeminiIntelligenceProvider.buildDefaultKey != nil, env.settings.cloudAIDecisionMade == false {
+            // A personal build with a baked-in key: on by default, clearly shown and switchable in Privacy Center.
+            env.settings.cloudAIEnabled = true
+            env.settings.cloudAIDecisionMade = true
+        }
         cloudFlag.isEnabled = env.settings.cloudAIEnabled && !uiTesting
         env.cloudFlag = cloudFlag
         if uiTesting {

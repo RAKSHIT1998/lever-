@@ -9,3 +9,4 @@ build/
 *.env
 Secrets.swift
 .build/
+Config/Secrets.xcconfig

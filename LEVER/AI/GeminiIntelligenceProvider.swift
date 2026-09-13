@@ -11,13 +11,24 @@ struct GeminiIntelligenceProvider: IntelligenceProvider {
     static let keychain = KeychainStore(service: "com.rakshit1998.lever.cloud")
     static let defaultModel = "gemini-2.0-flash"
 
+    /// Build-time defaults from Config/Secrets.xcconfig (gitignored) — lets a personal build ship with a key baked in.
+    static var buildDefaultKey: String? {
+        let v = Bundle.main.object(forInfoDictionaryKey: "LEVERGeminiDefaultKey") as? String
+        return (v?.isEmpty ?? true) ? nil : v
+    }
+
+    static var buildDefaultModel: String? {
+        let v = Bundle.main.object(forInfoDictionaryKey: "LEVERGeminiDefaultModel") as? String
+        return (v?.isEmpty ?? true) ? nil : v
+    }
+
     static var storedKey: String? {
-        get { keychain.get("geminiKey").flatMap { String(data: $0, encoding: .utf8) } }
+        get { keychain.get("geminiKey").flatMap { String(data: $0, encoding: .utf8) } ?? buildDefaultKey }
         set { if let newValue, !newValue.isEmpty { keychain.set(Data(newValue.utf8), for: "geminiKey") } else { keychain.remove("geminiKey") } }
     }
 
     static var storedModel: String {
-        get { keychain.get("geminiModel").flatMap { String(data: $0, encoding: .utf8) } ?? defaultModel }
+        get { keychain.get("geminiModel").flatMap { String(data: $0, encoding: .utf8) } ?? buildDefaultModel ?? defaultModel }
         set { keychain.set(Data(newValue.utf8), for: "geminiModel") }
     }
 

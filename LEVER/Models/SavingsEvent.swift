@@ -121,6 +121,7 @@ final class AppSettings {
     var lastWalletSync: Date? = nil
     var lastBackgroundRefresh: Date? = nil
     var showMerchantLogos: Bool = true
+    var cloudAIDecisionMade: Bool = false
 
     init() {
         hasCompletedOnboarding = false

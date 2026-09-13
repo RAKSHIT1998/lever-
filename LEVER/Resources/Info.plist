@@ -74,6 +74,12 @@
 	</array>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
+	<key>LEVERGeminiDefaultKey</key>
+	<string>$(GEMINI_DEFAULT_KEY)</string>
+	<key>LEVERGeminiDefaultModel</key>
+	<string>$(GEMINI_DEFAULT_MODEL)</string>
+	<key>LEVERGmailClientID</key>
+	<string>$(GMAIL_CLIENT_ID)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>

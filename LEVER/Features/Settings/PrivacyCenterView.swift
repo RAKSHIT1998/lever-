@@ -41,7 +41,7 @@ struct PrivacyCenterView: View {
             Section("What's processed by AI") {
                 Label(settings.cloudAIEnabled && geminiKey.isEmpty == false ? "On-device first; Gemini fills gaps when the local read is unsure." : "Text recognition and understanding run entirely on this iPhone.", systemImage: settings.cloudAIEnabled && !geminiKey.isEmpty ? "cloud" : "iphone")
                     .font(LeverFont.callout)
-                Toggle("Cloud intelligence (Google Gemini, free tier)", isOn: Binding(get: { settings.cloudAIEnabled }, set: { on in settings.cloudAIEnabled = on; env.cloudFlag?.isEnabled = on && !geminiKey.isEmpty }))
+                Toggle("Cloud intelligence (Google Gemini, free tier)", isOn: Binding(get: { settings.cloudAIEnabled }, set: { on in settings.cloudAIEnabled = on; settings.cloudAIDecisionMade = true; env.cloudFlag?.isEnabled = on && !geminiKey.isEmpty }))
                 if settings.cloudAIEnabled {
                     SecureField("Gemini API key", text: $geminiKey)
                         .textInputAutocapitalization(.never).autocorrectionDisabled().font(LeverFont.mono)

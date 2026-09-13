@@ -19,8 +19,13 @@ final class GmailImportSource: NSObject, EmailImportSource, ASWebAuthenticationP
 
     // MARK: Configuration
 
+    static var buildDefaultClientID: String? {
+        let v = Bundle.main.object(forInfoDictionaryKey: "LEVERGmailClientID") as? String
+        return (v?.isEmpty ?? true) ? nil : v
+    }
+
     var clientID: String? {
-        get { keychain.get("clientID").flatMap { String(data: $0, encoding: .utf8) } }
+        get { keychain.get("clientID").flatMap { String(data: $0, encoding: .utf8) } ?? Self.buildDefaultClientID }
         set {
             if let newValue, !newValue.isEmpty { keychain.set(Data(newValue.utf8), for: "clientID") } else { keychain.remove("clientID") }
         }

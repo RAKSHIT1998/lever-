@@ -124,7 +124,12 @@ struct GeminiIntelligenceProvider: IntelligenceProvider {
             "generationConfig": ["temperature": 0, "response_mime_type": "application/json", "response_schema": Self.responseSchema],
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        let (data, response) = try await URLSession.shared.data(for: request)
+        var (data, response) = try await URLSession.shared.data(for: request)
+        // Free tier is rate-limited per minute; one polite retry covers back-to-back captures.
+        if let http = response as? HTTPURLResponse, http.statusCode == 429 || http.statusCode == 503 {
+            try await Task.sleep(for: .seconds(3))
+            (data, response) = try await URLSession.shared.data(for: request)
+        }
         guard let http = response as? HTTPURLResponse else { throw IntelligenceError.remoteUnavailable }
         guard (200..<300).contains(http.statusCode) else {
             throw GeminiError.http(http.statusCode, Self.errorMessage(from: data))

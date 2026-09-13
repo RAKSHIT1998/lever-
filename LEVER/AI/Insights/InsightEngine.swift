@@ -21,12 +21,14 @@ struct Insight: Identifiable, Equatable {
 }
 
 enum Tool: String, CaseIterable, Identifiable {
-    case subscriptionAudit, cashForecast, costPerUse, returnDecision, askLever
+    case scanAndPay, spending, subscriptionAudit, cashForecast, costPerUse, returnDecision, askLever
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
+        case .scanAndPay: "Scan & Pay"
+        case .spending: "Spending"
         case .subscriptionAudit: "Subscription audit"
         case .cashForecast: "Next 30 days"
         case .costPerUse: "Cost per use"
@@ -37,6 +39,8 @@ enum Tool: String, CaseIterable, Identifiable {
 
     var subtitle: String {
         switch self {
+        case .scanAndPay: "Scan a shop's QR, pay with your own app, and LEVER logs the spend."
+        case .spending: "Where the money went this month — categories, merchants, UPI vs recurring."
         case .subscriptionAudit: "Everything you pay for on repeat, what it adds up to, what to cut."
         case .cashForecast: "Renewals and deadlines landing in the next month."
         case .costPerUse: "Is that subscription worth it? Divide price by how often you use it."
@@ -47,6 +51,8 @@ enum Tool: String, CaseIterable, Identifiable {
 
     var symbol: String {
         switch self {
+        case .scanAndPay: "qrcode.viewfinder"
+        case .spending: "chart.bar.xaxis"
         case .subscriptionAudit: "list.bullet.rectangle.portrait"
         case .cashForecast: "calendar.badge.clock"
         case .costPerUse: "divide.circle"

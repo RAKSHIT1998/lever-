@@ -57,6 +57,9 @@ CAPTURE → `IntelligenceProvider.extractDocument` → `DocumentReviewView` (use
 ## How it learns about spending
 See [HOW_IT_WORKS.md](HOW_IT_WORKS.md). Short version: camera/share sheet, an opt-in screenshot watcher, bank/card statement import with automatic recurring-charge detection, Apple Wallet via FinanceKit (entitlement pending), daily price re-checks of pasted product pages, and repeat-charge detection across the vault — all on-device.
 
+## Everyday spending, by region
+**Scan & Pay**: read the shop's QR (UPI in India; PIX, PayNow, PromptPay, DuitNow, QRIS via EMVCo), pay with your own app (Google Pay / PhonePe / Paytm / BHIM / CRED / any UPI app), and LEVER logs the spend when you return. UPI receipts and bank debit SMS parse on share/screenshot; PhonePe/Paytm/GPay exports import. A **Spending** tool shows where the month went.
+
 ## Beyond the receipt
 - **Resale intelligence** — depreciation-model estimates for electronics, labelled as estimates.
 - **Family vault** — share any purchase as a `.leverpurchase` file (AirDrop/Messages/Files); it imports into a household member's LEVER with receipts and warranties.

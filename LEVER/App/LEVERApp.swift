@@ -28,6 +28,10 @@ struct LEVERApp: App {
                         LEVERApp.scheduleBackgroundRefresh()
                     }
                     if phase == .active {
+                        if let pending = environment.pendingPayment {
+                            // Back from the payment app: ask, unless it's been so long the moment has passed.
+                            if Date().timeIntervalSince(pending.startedAt) < 20 * 60 { environment.router.showPaymentLog = true } else { environment.pendingPayment = nil }
+                        }
                         if let url = IntentRouter.pendingURL {
                             IntentRouter.pendingURL = nil
                             environment.handle(url: url)

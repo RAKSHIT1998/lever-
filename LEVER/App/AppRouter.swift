@@ -19,4 +19,5 @@ final class AppRouter {
     var pendingScreenshot: UIImage?
     /// Home's "Paste" quick action asks Capture to open the paste sheet on arrival.
     var pendingPasteRequest = false
+    var showPaymentLog = false
 }

@@ -98,6 +98,25 @@ struct DocumentParser {
 
         if let sourceURL { doc.productURL = sourceURL.absoluteString }
 
+        // 10b. UPI receipts and bank debit SMS are highly structured — let them override the generic read.
+        if let payment = PaymentMessageParser.parse(text, defaultCurrency: fallbackCurrency), payment.isDebit, payment.amount != nil {
+            if let merchant = payment.merchant, doc.merchant == nil || (fc["merchant"] ?? 0) < 0.95 {
+                doc.merchant = merchant
+                doc.merchantCategory = directory.entry(named: merchant)?.category ?? doc.merchantCategory
+                fc["merchant"] = 0.9 * ocr
+            }
+            doc.amount = payment.amount
+            doc.currencyCode = payment.currencyCode
+            fc["amount"] = 0.95 * ocr
+            if let date = payment.date { doc.purchaseDate = date; fc["purchaseDate"] = 0.9 * ocr }
+            doc.paymentMethod = payment.app.map { "UPI · \($0)" } ?? (payment.bankAccountHint.map { "UPI · \($0)" } ?? "UPI")
+            fc["paymentMethod"] = 0.9 * ocr
+            if doc.referenceNumber == nil { doc.referenceNumber = payment.reference }
+            if doc.documentType == .unknown || doc.documentType == .financial { doc.documentType = .receipt }
+            doc.tags.append("upi")
+            if doc.productTitle == nil || doc.productTitle == doc.merchant { doc.productTitle = doc.merchant.map { "Payment to \($0)" } }
+        }
+
         // 11. Overall confidence: the fields that matter most, weighted.
         let core: [Double] = [fc["merchant"] ?? 0.0, fc["amount"] ?? 0.0, fc["purchaseDate"] ?? 0.4]
         let overall = core.reduce(0, +) / Double(core.count)
@@ -262,6 +281,7 @@ struct DocumentParser {
         var tags: [String] = [doc.documentType.displayName.lowercased()]
         if doc.subscription != nil { tags.append("subscription") }
         if !doc.warranties.isEmpty { tags.append("warranty") }
+        if doc.paymentMethod?.uppercased().contains("UPI") == true { tags.append("upi") }
         if doc.merchantCategory != .other { tags.append(doc.merchantCategory.rawValue) }
         return Array(Set(tags)).sorted()
     }

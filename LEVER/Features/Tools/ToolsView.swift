@@ -40,6 +40,8 @@ struct ToolRouter: View {
     let tool: Tool
     var body: some View {
         switch tool {
+        case .scanAndPay: ScanAndPayView()
+        case .spending: SpendingView()
         case .subscriptionAudit: SubscriptionAuditView()
         case .cashForecast: CashForecastView()
         case .costPerUse: CostPerUseView()

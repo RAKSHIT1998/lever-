@@ -85,7 +85,11 @@ struct SourcesView: View {
                         .accessibilityIdentifier("emailImportLink")
                 }
 
-                source(symbol: "bell.badge", title: "SMS bank alerts", status: .notPossible, detail: "iOS doesn't let apps read messages. Long-press a bank SMS → Share → LEVER, or screenshot it and let the watcher catch it.") {
+                source(symbol: "qrcode.viewfinder", title: "Scan & Pay (\(env.paymentRegion.railName))", status: .on, detail: "Scan the shop's QR in LEVER, pay with \(env.paymentRegion.usesUPIURL ? "Google Pay, PhonePe, Paytm or any UPI app" : "your bank app"), and the spend is logged on return. The one way to capture everyday tap-to-pay spending on iOS.") {
+                    NavigationLink { ScanAndPayView() } label: { Text("Open Scan & Pay") }.buttonStyle(.compact)
+                }
+
+                source(symbol: "bell.badge", title: "UPI receipts & bank SMS", status: .on, detail: "iOS doesn't let apps read Messages, but LEVER understands them when you share or screenshot them: Google Pay / PhonePe / Paytm receipts and \"Rs.1499 debited … to VPA …\" alerts become purchases with merchant, amount, reference and bank. PhonePe, Paytm and Google Pay statement exports import too.") {
                     EmptyView()
                 }
 

@@ -17,7 +17,10 @@ LEVER has no bank login and no server watching your accounts. Spending reaches i
 | **Gmail import** | Live, needs your OAuth client ID | Google sign-in (PKCE, iOS client, read-only Gmail scope). A purchase-scoped search over the last 90 days (receipts, orders, renewals, bookings; promotions excluded) → each body HTML-stripped and parsed on-device → review list → import what's real. Tokens live in the Keychain; disconnect any time. Set the client ID once in Settings → Sources → Email. |
 | **Family vault** | Live | Any purchase exports as a `.leverpurchase` file (receipts, warranties, subscription, return window included) and travels by AirDrop, Messages or Files. Opening it in another LEVER imports it into their vault; same id updates rather than duplicates. No account, no server. iCloud-synced households are roadmap. |
 | **Resale intelligence** | Live (estimate) | Depreciation curves per device class (phone, laptop, tablet, wearable, camera, console, audio, TV, appliance) give a "worth about ₹X today / ₹Y in 6 months" estimate on electronics ≥ ₹15,000 and ≥ 10 months old. Always low confidence, always labelled a model — never a quote. |
-| **SMS bank alerts** | Not possible on iOS | Apps cannot read Messages. Long-press → Share → LEVER, or screenshot it and let the watcher catch it. |
+| **Scan & Pay** (UPI · PIX · PayNow · PromptPay · DuitNow · QRIS) | Live | LEVER reads the merchant's QR (UPI URL or EMVCo TLV → merchant, payee, amount, currency, country), hands off to Google Pay / PhonePe / Paytm / BHIM / CRED / any UPI app via URL scheme (other rails: copy code), and on return asks "did it go through?" → logs the purchase. This is the only realistic way to capture tap-to-pay spending on iOS: be the launch point. Region auto-detected, switchable in Settings. |
+| **UPI receipts & bank debit SMS** | Live | `PaymentMessageParser` reads Google Pay / PhonePe / Paytm receipt screenshots and bank alerts ("Rs.1499 debited from A/c XX1234 to VPA netflix.upi@icici… UPI Ref …") → merchant (from name or VPA handle), amount, date, reference, bank, app. High confidence — these are machine-generated. Credits/refunds are recognised and not counted as spend. |
+| **Payment-app exports** | Live | PhonePe, Paytm and Google Pay statement CSVs map onto the statement importer (quoted dates, DEBIT/CREDIT type columns, "Paid to …" and VPA descriptions) → recurring detection. |
+| **SMS reading** | Not possible on iOS | Apps cannot read Messages directly. Share or screenshot the alert; LEVER does the rest. |
 
 ## Staying in front of the user (without nagging)
 
@@ -29,7 +32,7 @@ LEVER has no bank login and no server watching your accounts. Spending reaches i
 
 `InsightEngine` looks across the whole vault for patterns single-purchase rules miss — recurring total, subscriptions you marked unused, three or more streaming services, price creep, expensive electronics with no coverage or price link, unknown return windows, next-30-day outflow. Each suggestion names its evidence and deep-links to the fix.
 
-Tools: **Subscription audit** (monthly/yearly totals, increases, unused), **Next 30 days** (renewals + deadlines, add all to Calendar), **Cost per use**, **Should I return it?** (used? faulty? cheaper elsewhere? → recommendation), **Ask LEVER** (on-device answers for warranties/renewals/returns/spending/savings; free-form questions go to Gemini with a document-free summary only when cloud is on).
+Tools: **Scan & Pay**, **Spending** (month-by-month totals, recurring vs UPI vs other, category and merchant breakdown — from everything LEVER has seen, and says so), **Subscription audit** (monthly/yearly totals, increases, unused), **Next 30 days** (renewals + deadlines, add all to Calendar), **Cost per use**, **Should I return it?** (used? faulty? cheaper elsewhere? → recommendation), **Ask LEVER** (on-device answers for warranties/renewals/returns/spending/savings; free-form questions go to Gemini with a document-free summary only when cloud is on).
 
 ## Free external services (no backend, no accounts)
 

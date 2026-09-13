@@ -29,6 +29,12 @@ final class AppEnvironment {
     var pendingScreenshotCount = 0
     /// Mirrors `settings.cloudAIEnabled` into the Sendable provider without touching SwiftData off the main actor.
     var cloudFlag: CloudFlag?
+    /// A payment the user launched from Scan & Pay, awaiting confirmation on return.
+    var pendingPayment: PendingPayment?
+
+    var paymentRegion: PaymentRegion {
+        settings.paymentRegionRaw.flatMap(PaymentRegion.init(rawValue:)) ?? PaymentRegion.detect()
+    }
     let merchantIdentity = MerchantIdentityService()
 
     /// Set by the biometric gate; sensitive screens check this.

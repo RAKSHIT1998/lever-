@@ -326,6 +326,31 @@ final class PurchaseRepository {
 
     var totals: SavingsTotals { SavingsTotals(events: savingsEvents(), currencyCode: profile().currencyCode) }
 
+    // MARK: - Scan & Pay
+
+    /// Records a payment the user made from Scan & Pay. Source of truth is the user's confirmation — LEVER saw the
+    /// QR and the hand-off, never the bank's response.
+    @discardableResult
+    func logPayment(_ pending: PendingPayment, amount: Decimal, note: String?) async -> Purchase {
+        let r = pending.request
+        let merchantName = r.merchantName ?? PaymentMessageParser.merchantName(fromVPA: r.payeeAddress ?? "") ?? r.payeeAddress ?? "Merchant"
+        let entry = MerchantDirectory().entry(named: merchantName) ?? MerchantDirectory().match(in: merchantName)
+        let purchase = Purchase(title: note ?? "Payment to \(merchantName)", merchantName: entry?.name ?? merchantName, merchantCategory: entry?.category ?? .other, documentType: .receipt, amount: amount, currencyCode: r.currencyCode, purchaseDate: .now, tags: ["upi", "scan-and-pay", r.rail.lowercased()])
+        purchase.paymentMethod = "\(r.rail) · \(pending.appName)"
+        purchase.referenceNumber = r.reference
+        purchase.notes = r.payeeAddress.map { "Paid to \($0)" }
+        purchase.merchant = upsertMerchant(named: purchase.merchantName, category: purchase.merchantCategory)
+        context.insert(purchase)
+        let document = StoredDocument(kind: .text, rawText: "\(r.rail) payment\nTo: \(r.merchantName ?? "")\nPayee: \(r.payeeAddress ?? "")\nAmount: \(amount) \(r.currencyCode)\nVia: \(pending.appName)\nQR: \(r.rawPayload)")
+        document.purchase = purchase
+        context.insert(document)
+        try? context.save()
+        analytics.track(.captureCompleted, properties: ["documentType": "scanAndPay", "rail": r.rail])
+        await refreshOpportunities(for: purchase)
+        publishSnapshot()
+        return purchase
+    }
+
     // MARK: - Editing
 
     struct PurchaseEdits {

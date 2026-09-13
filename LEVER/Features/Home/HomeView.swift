@@ -193,10 +193,12 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             SectionHeader(title: "Quick actions")
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.xs) {
-                QuickActionCard(symbol: "viewfinder", title: "Scan", subtitle: "Receipt, bill or screen") { env.router.selectedTab = .capture }
-                QuickActionCard(symbol: "building.columns", title: "Statement", subtitle: "Find every recurring charge", tint: LeverColor.info) { showSources = true }
-                QuickActionCard(symbol: "doc.on.clipboard", title: "Paste", subtitle: "Email or confirmation text", tint: LeverColor.opportunity) { env.router.pendingPasteRequest = true; env.router.selectedTab = .capture }
-                QuickActionCard(symbol: "text.bubble", title: "Ask LEVER", subtitle: "Warranties, renewals, returns…", tint: LeverColor.money) { toolDestination = .askLever }
+                QuickActionCard(symbol: "qrcode.viewfinder", title: "Scan & Pay", subtitle: "\(env.paymentRegion.railName) QR → your app → logged", tint: LeverColor.money) { toolDestination = .scanAndPay }
+                QuickActionCard(symbol: "viewfinder", title: "Scan receipt", subtitle: "Receipt, bill or screen") { env.router.selectedTab = .capture }
+                QuickActionCard(symbol: "chart.bar.xaxis", title: "Spending", subtitle: "Where the money went", tint: LeverColor.info) { toolDestination = .spending }
+                QuickActionCard(symbol: "building.columns", title: "Statement", subtitle: "Bank, PhonePe, Paytm, GPay exports", tint: LeverColor.opportunity) { showSources = true }
+                QuickActionCard(symbol: "doc.on.clipboard", title: "Paste", subtitle: "Email, SMS or UPI receipt", tint: LeverColor.protection) { env.router.pendingPasteRequest = true; env.router.selectedTab = .capture }
+                QuickActionCard(symbol: "text.bubble", title: "Ask LEVER", subtitle: "Warranties, renewals, returns…") { toolDestination = .askLever }
             }
         }
     }

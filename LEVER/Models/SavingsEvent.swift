@@ -122,6 +122,7 @@ final class AppSettings {
     var lastBackgroundRefresh: Date? = nil
     var showMerchantLogos: Bool = true
     var cloudAIDecisionMade: Bool = false
+    var paymentRegionRaw: String? = nil
 
     init() {
         hasCompletedOnboarding = false

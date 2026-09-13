@@ -74,6 +74,13 @@ struct SettingsView: View {
                         .accessibilityIdentifier("privacyCenterLink")
                 }
 
+                Section("Payments") {
+                    Picker("Scan & Pay region", selection: Binding(get: { env.paymentRegion }, set: { settings.paymentRegionRaw = $0.rawValue })) {
+                        ForEach(PaymentRegion.allCases) { Text($0.displayName).tag($0) }
+                    }
+                    Text("Sets which QR standard LEVER reads and which apps it can hand off to. Detected from your region; change it when travelling.").font(.caption2).foregroundStyle(LeverColor.inkTertiary)
+                }
+
                 Section("Preferences") {
                     Picker("Currency", selection: Binding(get: { env.repository.profile().currencyCode }, set: { env.repository.profile().currencyCode = $0; try? env.container.mainContext.save(); env.repository.publishSnapshot() })) {
                         ForEach(["INR", "USD", "EUR", "GBP", "AED", "SGD", "AUD", "CAD"], id: \.self) { Text("\($0) \(Money.symbol(for: $0))").tag($0) }

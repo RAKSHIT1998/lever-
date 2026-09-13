@@ -41,9 +41,15 @@ struct StatementImporter: Sendable {
         let separator: Character = lines[headerIndex].contains("\t") ? "\t" : (lines[headerIndex].contains(";") ? ";" : ",")
         let header = split(lines[headerIndex], separator).map { $0.lowercased().trimmingCharacters(in: .whitespaces) }
 
-        func column(_ names: [String]) -> Int? { header.firstIndex { h in names.contains { h.contains($0) } } }
+        // Names are in priority order: the first name that matches any header wins (so Paytm's "Source/Destination"
+        // beats its vaguer "Activity" column).
+        func column(_ names: [String]) -> Int? {
+            for name in names { if let i = header.firstIndex(where: { $0.contains(name) }) { return i } }
+            return nil
+        }
         guard let dateCol = column(["date"]) else { return nil }
-        let descCol = column(["description", "narration", "particulars", "details", "merchant", "memo", "payee", "remarks"]) ?? (dateCol + 1)
+        let descCol = column(["source/destination", "to/from", "payee", "merchant", "transaction details", "narration", "particulars", "description", "details", "memo", "remarks", "name", "activity"]) ?? (dateCol + 1)
+        let typeCol = column(["type", "transaction type", "dr/cr", "debit/credit", "status"])
         let debitCol = column(["debit", "withdrawal", "paid out", "money out"])
         let creditCol = column(["credit", "deposit", "paid in", "money in"])
         let amountCol = column(["amount"])
@@ -64,6 +70,10 @@ struct StatementImporter: Sendable {
                 amount = abs(v)
                 if signed {
                     isDebit = v < 0
+                } else if let typeCol, typeCol < cells.count {
+                    // Payment-app exports: "DEBIT"/"CREDIT", "Paid"/"Received", "Sent"/"Received".
+                    let t = cells[typeCol].lowercased()
+                    isDebit = !(t.contains("credit") || t.contains("received") || t.contains("refund") || t.contains("cashback"))
                 } else {
                     let typeHint = cells.joined(separator: " ").lowercased()
                     isDebit = typeHint.contains("debit") || typeHint.contains(" dr") || !(typeHint.contains("credit") || typeHint.contains(" cr"))
@@ -129,6 +139,14 @@ struct StatementImporter: Sendable {
     static func merchant(from description: String) -> (String, MerchantCategory) {
         let directory = MerchantDirectory()
         if let entry = directory.match(in: description) { return (entry.name, entry.category) }
+        // Payment-app rows: "Paid to Blue Tokai Coffee" / "Payment to …"
+        if let m = Pattern(#"(?:paid to|payment to|sent to|transfer to)\s+(.+)$"#).firstMatch(in: description), let name = m[1]?.squashedWhitespace, name.count >= 3 {
+            return (name.replacingOccurrences(of: #"\s+(via|using|upi).*$"#, with: "", options: [.regularExpression, .caseInsensitive]).capitalized, .other)
+        }
+        // A bare VPA in the description ("netflix.upi@icici") → merchant handle.
+        if let m = Pattern(#"\b([a-z0-9._-]{2,}@[a-z][a-z0-9]{1,})\b"#).firstMatch(in: description.lowercased()), let vpa = m[1], let name = PaymentMessageParser.merchantName(fromVPA: vpa) {
+            return (name, directory.entry(named: name)?.category ?? .other)
+        }
         var cleaned = description.lowercased()
         cleaned = cleaned.replacingOccurrences(of: #"[^a-z\s&.]"#, with: " ", options: .regularExpression)
         var previous = ""
@@ -175,12 +193,13 @@ enum RecurringChargeDetector {
             // Prices creep up; allow ±30% around the median so an increase still reads as the same subscription.
             guard median > 0, amounts.allSatisfy({ abs($0 - median) / median <= Decimal(sign: .plus, exponent: -1, significand: 3) }) else { continue }
             guard let last = sorted.last else { continue }
-            let previous = sorted.count >= 2 ? sorted[sorted.count - 2].amount : nil
+            // "Previous price" = the most recent charge that differed from the current one (price rises stick for months).
+            let previous = sorted.dropLast().last { $0.amount != last.amount }?.amount
             let next = SubscriptionMath.nextBillingDate(after: last.date, cycle: cycle, calendar: calendar, now: now)
             let confidence: Confidence = sorted.count >= 3 ? .high : .medium
             candidates.append(RecurringCandidate(
                 merchantName: last.merchantName, category: last.category, typicalAmount: median, latestAmount: last.amount,
-                previousAmount: previous != last.amount ? previous : nil, currencyCode: last.currencyCode, cycle: cycle,
+                previousAmount: previous, currencyCode: last.currencyCode, cycle: cycle,
                 occurrences: sorted.count, lastDate: last.date, nextDate: next, confidence: confidence
             ))
         }

@@ -40,6 +40,12 @@
 - [x] Delete-everything clears store, files, inbox, Keychain, notifications and widget snapshot
 - [x] No secrets in source control (`.gitignore` excludes `Secrets.swift`, `.env`)
 
+## Payments (Scan & Pay)
+- [x] `LSApplicationQueriesSchemes` declares upi, gpay, tez, phonepe, paytmmp, bhim, cred, nubank, paylah so LEVER can detect installed payment apps
+- [ ] Test on device: scan a real UPI QR → Google Pay/PhonePe/Paytm opens with payee + amount prefilled → return → log sheet appears
+- [ ] Verify each app's URL scheme still works (payment apps change these); "Any UPI app" (`upi://pay`) is the fallback
+- [ ] App Review note: LEVER never initiates or processes payments; it deep-links to the user's payment app and records what the user confirms
+
 ## Secrets
 - `Config/Secrets.xcconfig` holds the Gemini key (and optionally a Gmail client ID). It is gitignored — copy it to any new machine by hand. For App Store builds, prefer leaving the key out of the shipped binary (a client-side key can be extracted); users then paste their own key in Privacy Center.
 

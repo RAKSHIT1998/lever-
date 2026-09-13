@@ -25,6 +25,14 @@ struct RootView: View {
         .sheet(isPresented: $router.showSettings) {
             SettingsView()
         }
+        .sheet(isPresented: $router.showPaymentLog) {
+            if let pending = env.pendingPayment {
+                PaymentLogSheet(pending: pending) {
+                    env.pendingPayment = nil
+                    router.showPaymentLog = false
+                }
+            }
+        }
     }
 }
 

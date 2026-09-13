@@ -86,6 +86,16 @@ struct PrivacyCenterView: View {
                         exportURL = url
                     }
                 } label: { Label("Export everything (JSON)", systemImage: "square.and.arrow.up") }
+                Button {
+                    if let data = env.repository.exportParsingSamples() {
+                        let url = FileManager.default.temporaryDirectory.appendingPathComponent("LEVER-parsing-samples.json")
+                        try? data.write(to: url, options: [.atomic, .completeFileProtection])
+                        exportURL = url
+                    }
+                } label: { Label("Export parsing samples", systemImage: "doc.text.magnifyingglass") }
+                    .accessibilityIdentifier("exportSamplesButton")
+                Text("Recognised text plus the values you ended up with, for improving the parser. Contains your receipts — share it only with someone you trust.")
+                    .font(.caption2).foregroundStyle(LeverColor.inkTertiary)
                 Button(role: .destructive) { showDeleteConfirm = true } label: { Label("Delete everything", systemImage: "trash") }
                     .accessibilityIdentifier("deleteEverythingButton")
             }

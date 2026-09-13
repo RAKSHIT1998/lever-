@@ -483,6 +483,39 @@ final class PurchaseRepository {
         return try? encoder.encode(payload)
     }
 
+    // MARK: - Parsing samples (user-initiated, for improving the parser)
+
+    struct ParsingSample: Codable {
+        var title: String
+        var merchant: String
+        var amount: Decimal
+        var currency: String
+        var purchaseDate: Date?
+        var documentType: String
+        var returnDeadline: Date?
+        var renewalDate: Date?
+        var warrantyEnd: Date?
+        var provider: String
+        var confidence: String
+        var rawText: String
+    }
+
+    /// Every purchase with recognised text, alongside the fields the user ended up with. Shared only when the user
+    /// chooses to; the file is theirs. This is how the parser learns from real receipts.
+    func exportParsingSamples() -> Data? {
+        let samples = allPurchases().compactMap { p -> ParsingSample? in
+            guard let text = p.documents.compactMap(\.rawText).first, !text.isEmpty else { return nil }
+            return ParsingSample(
+                title: p.title, merchant: p.merchantName, amount: p.amount, currency: p.currencyCode, purchaseDate: p.purchaseDate,
+                documentType: p.documentTypeRaw, returnDeadline: p.returnWindow?.deadline, renewalDate: p.subscription?.nextBillingDate,
+                warrantyEnd: p.warranties.first?.endDate, provider: p.analyses.first?.providerName ?? "?", confidence: p.analyses.first?.confidenceRaw ?? "?", rawText: text
+            )
+        }
+        let encoder = JSONEncoder.lever
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try? encoder.encode(samples)
+    }
+
     // MARK: - Widget snapshot
 
     func publishSnapshot() {

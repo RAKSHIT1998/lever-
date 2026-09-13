@@ -13,7 +13,7 @@ xcodegen generate
 open LEVER.xcodeproj
 ```
 
-The `LEVER` scheme includes the `Products.storekit` configuration so the paywall works in the simulator without App Store Connect. Debug builds seed realistic sample data on first launch (Settings → Debug → *Load sample data* to re-seed).
+The `LEVER` scheme includes the `Products.storekit` configuration so the paywall works in the simulator and on a development device without App Store Connect. The app never seeds sample data — every record comes from the user's own documents. Fixture data exists only for automated UI tests (`-ui-testing -sample-data`).
 
 ```sh
 # Unit + UI tests

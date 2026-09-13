@@ -1,7 +1,8 @@
 import Foundation
 import SwiftData
 
-/// Realistic sample data so the simulator is immediately impressive. DEBUG and UI tests only.
+/// Fixture data for automated UI tests and SwiftUI previews ONLY. The shipping app never calls this —
+/// real users start with an empty vault and everything they see comes from their own documents.
 @MainActor
 enum SampleDataSeeder {
     static func seedIfNeeded(_ repo: PurchaseRepository, force: Bool = false) {

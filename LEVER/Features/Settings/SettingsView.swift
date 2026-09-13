@@ -88,10 +88,8 @@ struct SettingsView: View {
                 }
 
                 #if DEBUG
-                Section("Debug") {
-                    Button("Load sample data") { SampleDataSeeder.seedIfNeeded(env.repository, force: true) }
-                    Toggle("Simulate Pro", isOn: Binding(get: { env.store.debugOverridePro ?? false }, set: { env.store.debugOverridePro = $0 ? true : nil }))
-                    Button("Reset onboarding") { settings.hasCompletedOnboarding = false; dismiss() }
+                Section("Developer") {
+                    Button("Replay onboarding") { settings.hasCompletedOnboarding = false; dismiss() }
                 }
                 #endif
             }

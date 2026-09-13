@@ -39,11 +39,6 @@ struct LEVERApp: App {
                 }
                 .task {
                     environment.analytics.track(.appOpen)
-                    #if DEBUG
-                    if !environment.launchedForUITests {
-                        SampleDataSeeder.seedIfNeeded(environment.repository)
-                    }
-                    #endif
                     environment.refreshInboxCount()
                     if environment.settings.requireBiometrics && !environment.launchedForUITests { environment.isUnlocked = false }
                     await environment.store.load()

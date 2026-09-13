@@ -27,11 +27,11 @@ final class StoreService: ProEntitlementProviding {
     private(set) var lastError: String?
     @ObservationIgnored private var updatesTask: Task<Void, Never>?
 
-    /// Debug/UI-test override so flows can be exercised without the App Store.
+    /// UI-test override so paywall flows can be exercised without the App Store. Ignored outside `-ui-testing`.
     var debugOverridePro: Bool? = nil
 
     var isPro: Bool {
-        if let debugOverridePro { return debugOverridePro }
+        if let debugOverridePro, ProcessInfo.processInfo.arguments.contains("-ui-testing") { return debugOverridePro }
         return EntitlementResolver.isPro(activeProductIDs: activeProductIDs)
     }
 

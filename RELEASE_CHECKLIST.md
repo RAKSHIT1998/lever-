@@ -40,6 +40,9 @@
 - [x] Delete-everything clears store, files, inbox, Keychain, notifications and widget snapshot
 - [x] No secrets in source control (`.gitignore` excludes `Secrets.swift`, `.env`)
 
+## Secrets
+- `Config/Secrets.xcconfig` holds the Gemini key (and optionally a Gmail client ID). It is gitignored — copy it to any new machine by hand. For App Store builds, prefer leaving the key out of the shipped binary (a client-side key can be extracted); users then paste their own key in Privacy Center.
+
 ## External services to disclose in App Privacy
 - Gemini (opt-in, user key): document text → Google. Declare "Other Usage Data" only if enabled; default off.
 - Clearbit / Google / DuckDuckGo favicons: merchant names/domains. Not linked to identity.

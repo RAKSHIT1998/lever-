@@ -9,7 +9,7 @@ struct GeminiIntelligenceProvider: IntelligenceProvider {
     let model: String
 
     static let keychain = KeychainStore(service: "com.rakshit1998.lever.cloud")
-    static let defaultModel = "gemini-2.0-flash"
+    static let defaultModel = "gemini-flash-latest"
 
     /// Build-time defaults from Config/Secrets.xcconfig (gitignored) — lets a personal build ship with a key baked in.
     static var buildDefaultKey: String? {

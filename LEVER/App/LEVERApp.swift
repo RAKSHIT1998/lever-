@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import BackgroundTasks
+import CoreSpotlight
 
 @main
 struct LEVERApp: App {
@@ -15,6 +16,12 @@ struct LEVERApp: App {
                 .tint(LeverColor.ink)
                 .onOpenURL { url in
                     environment.handle(url: url)
+                }
+                .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                    guard let identifier = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
+                          let id = SpotlightIndexer.purchaseID(from: identifier) else { return }
+                    environment.router.selectedTab = .vault
+                    environment.router.pendingPurchaseID = id
                 }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background {

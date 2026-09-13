@@ -3,8 +3,14 @@ import MessageUI
 
 struct OpportunityDetailView: View {
     @Environment(AppEnvironment.self) private var env
+    @Environment(\.dismiss) private var dismiss
     @Bindable var opportunity: Opportunity
     var onFinished: (() -> Void)? = nil
+
+    /// Leave the screen: the magic-moment flow supplies its own exit; from the feed we simply pop.
+    private func finish() {
+        if let onFinished { onFinished() } else { dismiss() }
+    }
 
     @State private var plan: ActionPlan?
     @State private var showFight = false
@@ -14,6 +20,8 @@ struct OpportunityDetailView: View {
     @State private var showDismissConfirm = false
     @State private var copied = false
     @State private var calendarResult: Bool?
+    @State private var showClaim = false
+    @State private var showSnooze = false
 
     var body: some View {
         ScrollView {
@@ -42,16 +50,24 @@ struct OpportunityDetailView: View {
             if let plan { FightForMeView(opportunity: opportunity, plan: plan) { showFight = false; showSavingsSheet = true } }
         }
         .sheet(isPresented: $showNegotiation) { NegotiationView(opportunity: opportunity) }
+        .sheet(isPresented: $showClaim) { ClaimComposerView(opportunity: opportunity) }
+        .confirmationDialog("Remind me later", isPresented: $showSnooze, titleVisibility: .visible) {
+            Button("Tomorrow") { env.repository.snooze(opportunity, days: 1); finish() }
+            Button("In 3 days") { env.repository.snooze(opportunity, days: 3); finish() }
+            Button("Next week") { env.repository.snooze(opportunity, days: 7); finish() }
+        } message: {
+            Text(opportunity.deadline.map { "Deadline is \($0.leverMedium) — LEVER won't snooze past it." } ?? "It comes back to your Home feed on that day.")
+        }
         .sheet(isPresented: $showSavingsSheet) {
             SavingsConfirmationSheet(opportunity: opportunity) {
                 showSavingsSheet = false
-                onFinished?()
+                if !opportunity.isActionable { finish() }
             }
         }
         .confirmationDialog("Dismiss this opportunity?", isPresented: $showDismissConfirm, titleVisibility: .visible) {
             Button("Not relevant to me", role: .destructive) {
                 env.repository.update(opportunity, status: .dismissed)
-                onFinished?()
+                finish()
             }
         }
     }
@@ -207,6 +223,10 @@ struct OpportunityDetailView: View {
                 Button("Prepare negotiation") { showNegotiation = true }.buttonStyle(.secondary)
                     .accessibilityIdentifier("prepareNegotiationButton")
             }
+            if [.warrantyExpiration, .claimOpportunity, .returnDeadline, .refund, .duplicateCharge, .feeDetection, .priceDrop, .travelPriceChange].contains(opportunity.type), opportunity.isActionable {
+                Button("Compose claim") { showClaim = true }.buttonStyle(.secondary)
+                    .accessibilityIdentifier("composeClaimButton")
+            }
             if opportunity.isActionable {
                 Button("Mark resolved") {
                     env.analytics.track(.actionCompleted, properties: ["type": opportunity.type.rawValue])
@@ -214,9 +234,14 @@ struct OpportunityDetailView: View {
                 }
                 .buttonStyle(.primary)
                 .accessibilityIdentifier("markResolvedButton")
-                Button("Dismiss") { showDismissConfirm = true }
-                    .font(LeverFont.callout.weight(.medium)).foregroundStyle(LeverColor.inkSecondary)
-                    .padding(.top, Spacing.xxs)
+                HStack(spacing: Spacing.lg) {
+                    Button("Remind me later") { showSnooze = true }
+                        .accessibilityIdentifier("snoozeButton")
+                    Button("Dismiss") { showDismissConfirm = true }
+                }
+                .font(LeverFont.callout.weight(.medium)).foregroundStyle(LeverColor.inkSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.top, Spacing.xxs)
             } else {
                 InsightBanner(symbol: "checkmark.circle.fill", title: "This opportunity is \(opportunity.status.displayName.lowercased()).", tint: LeverColor.inkSecondary)
             }

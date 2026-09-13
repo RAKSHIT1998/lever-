@@ -13,6 +13,7 @@ final class PurchaseRepository {
     let files: DocumentFileStore
     let analytics: AnalyticsTracking
     let liveActivities = LiveActivityManager()
+    let spotlight = SpotlightIndexer()
 
     init(context: ModelContext, intelligence: IntelligenceProvider, policies: ReturnPolicyProviding, notifications: NotificationScheduling, files: DocumentFileStore, analytics: AnalyticsTracking) {
         self.context = context
@@ -77,7 +78,7 @@ final class PurchaseRepository {
         let open = OpportunityStatus.open.rawValue
         let inProgress = OpportunityStatus.inProgress.rawValue
         let descriptor = FetchDescriptor<Opportunity>(predicate: #Predicate { $0.statusRaw == open || $0.statusRaw == inProgress })
-        let items = (try? context.fetch(descriptor)) ?? []
+        let items = ((try? context.fetch(descriptor)) ?? []).filter { !$0.isSnoozed }
         return OpportunityRanker.rank(items) { $0.priorityScore }
     }
 
@@ -269,6 +270,16 @@ final class PurchaseRepository {
         return plan
     }
 
+    func snooze(_ opportunity: Opportunity, days: Int) {
+        var until = DateMath.adding(days: days, to: .now) ?? .now
+        // Never hide something past the moment it matters: wake at least a day before the deadline.
+        if let deadline = opportunity.deadline, let dayBefore = DateMath.adding(days: -1, to: deadline), dayBefore < until { until = max(dayBefore, .now) }
+        opportunity.snoozedUntil = until
+        try? context.save()
+        publishSnapshot()
+        liveActivities.sync(with: openOpportunities())
+    }
+
     func update(_ opportunity: Opportunity, status: OpportunityStatus) {
         opportunity.status = status
         if status == .resolved || status == .dismissed { opportunity.resolvedAt = .now }
@@ -315,6 +326,52 @@ final class PurchaseRepository {
 
     var totals: SavingsTotals { SavingsTotals(events: savingsEvents(), currencyCode: profile().currencyCode) }
 
+    // MARK: - Editing
+
+    struct PurchaseEdits {
+        var title: String
+        var merchantName: String
+        var amount: Decimal
+        var purchaseDate: Date?
+        var returnDeadline: Date?
+        var orderNumber: String?
+        var serialNumber: String?
+        var notes: String?
+    }
+
+    /// Applies user corrections and re-runs everything that depends on them. User input is trusted (high confidence).
+    func apply(_ edits: PurchaseEdits, to purchase: Purchase) async {
+        purchase.title = edits.title
+        if purchase.merchantName != edits.merchantName {
+            purchase.merchantName = edits.merchantName
+            purchase.merchant = upsertMerchant(named: edits.merchantName, category: purchase.merchantCategory)
+        }
+        purchase.amount = edits.amount
+        purchase.purchaseDate = edits.purchaseDate
+        purchase.orderNumber = edits.orderNumber
+        purchase.serialNumber = edits.serialNumber
+        purchase.notes = edits.notes
+        if let deadline = edits.returnDeadline {
+            if let window = purchase.returnWindow {
+                window.deadline = deadline
+                window.policySource = "Entered by you"
+                window.confidenceRaw = Confidence.high.rawValue
+                window.daysAllowed = edits.purchaseDate.map { DateMath.days(from: $0, to: deadline) }
+            } else {
+                let window = ReturnWindow(deadline: deadline, daysAllowed: edits.purchaseDate.map { DateMath.days(from: $0, to: deadline) }, policySource: "Entered by you", policyDate: .now, confidence: .high)
+                window.purchase = purchase
+                context.insert(window)
+            }
+        } else if let window = purchase.returnWindow {
+            context.delete(window)
+        }
+        purchase.updatedAt = .now
+        try? context.save()
+        await refreshOpportunities(for: purchase)
+        await scheduleReminders(for: purchase)
+        publishSnapshot()
+    }
+
     // MARK: - Price observations
 
     func recordPrice(_ price: Decimal, url: String?, for purchase: Purchase, source: String = "Entered by you") async {
@@ -354,6 +411,7 @@ final class PurchaseRepository {
         let pending = await notifications.pendingIdentifiers()
         let prefixes = DeadlineNotificationPlanner.prefixes(for: purchase.id)
         await notifications.cancel(identifiers: pending.filter { id in prefixes.contains { id.hasPrefix($0) } })
+        spotlight.remove(purchase.id)
         context.delete(purchase)
         try? context.save()
         publishSnapshot()
@@ -371,6 +429,7 @@ final class PurchaseRepository {
         cachedProfile = nil
         try? context.save()
         files.deleteAll()
+        spotlight.removeAll()
         InboxStore().removeAll()
         WidgetSnapshot.clear()
         KeychainStore().removeAll()
@@ -427,9 +486,10 @@ final class PurchaseRepository {
     // MARK: - Widget snapshot
 
     func publishSnapshot() {
-        let open = openOpportunities()
-        let now = Date.now
+        spotlight.index(allPurchases())
         let currency = profile().currencyCode
+        let open = openOpportunities().filter { $0.currencyCode == currency }
+        let now = Date.now
         let weekAhead = DateMath.adding(days: 7, to: now) ?? now
         let purchases = allPurchases()
         let totals = self.totals

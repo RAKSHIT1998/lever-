@@ -8,6 +8,8 @@ struct PurchaseDetailView: View {
     @State private var showPriceSheet = false
     @State private var showWarrantySheet = false
     @State private var showDeleteConfirm = false
+    @State private var showEdit = false
+    @State private var shareURL: URL?
     @State private var selectedOpportunity: Opportunity?
     @State private var previewDocument: StoredDocument?
 
@@ -51,6 +53,13 @@ struct PurchaseDetailView: View {
         .leverScreenBackground()
         .navigationTitle(purchase.merchantName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Edit") { showEdit = true }.accessibilityIdentifier("purchaseEditButton")
+            }
+        }
+        .sheet(isPresented: $showEdit) { EditPurchaseSheet(purchase: purchase) }
+        .sheet(item: $shareURL) { url in ShareSheet(items: [url]) }
         .navigationDestination(item: $selectedOpportunity) { OpportunityDetailView(opportunity: $0) }
         .sheet(isPresented: $showPriceSheet) { RecordPriceSheet(purchase: purchase) }
         .sheet(isPresented: $showWarrantySheet) { AddWarrantySheet(purchase: purchase) }
@@ -211,10 +220,18 @@ struct PurchaseDetailView: View {
                     Text("Warranties, insurance and big purchases are family business. Send this record to a household member's LEVER.")
                         .font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary)
                 }
-                ShareLink(item: SharedPurchaseFile(transfer: env.repository.shareBundle(for: purchase)), preview: SharePreview(purchase.title, image: Image(systemName: "shield.checkered"))) {
+                Button {
+                    // Built on tap, never in `body`: exporting marks the purchase as shared and saves.
+                    let bundle = env.repository.shareBundle(for: purchase)
+                    let url = FileManager.default.temporaryDirectory.appendingPathComponent(PurchaseTransferCodec.fileName(for: bundle))
+                    if let data = try? PurchaseTransferCodec.encode(bundle), (try? data.write(to: url, options: .atomic)) != nil {
+                        shareURL = url
+                    }
+                } label: {
                     Label("Share with family", systemImage: "square.and.arrow.up").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.secondary)
+                .accessibilityIdentifier("shareWithFamilyButton")
                 Text("Sent as a .leverpurchase file over AirDrop, Messages or Files — receipts included, nothing via a server.")
                     .font(.caption2).foregroundStyle(LeverColor.inkTertiary)
             }

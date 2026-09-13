@@ -98,7 +98,7 @@ final class Purchase {
 
     /// Only genuine savings/recoveries — never the value of an item merely at stake.
     var potentialSavings: Decimal {
-        openOpportunities.filter(\.countsAsPotentialSaving).compactMap(\.estimatedSavings).reduce(0, +)
+        openOpportunities.filter { $0.countsAsPotentialSaving && $0.confidence != .low }.compactMap(\.estimatedSavings).reduce(0, +)
     }
 
     var hasActiveProtection: Bool {

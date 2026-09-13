@@ -20,6 +20,8 @@ final class Opportunity {
     var createdAt: Date
     var lastCheckedAt: Date
     var resolvedAt: Date?
+    /// Hidden from the feed until this date; the user asked to be reminded later.
+    var snoozedUntil: Date? = nil
     var purchase: Purchase?
 
     @Relationship(deleteRule: .cascade, inverse: \Evidence.opportunity)
@@ -97,6 +99,11 @@ final class Opportunity {
     }
 
     var isActionable: Bool { status == .open || status == .inProgress }
+
+    var isSnoozed: Bool { (snoozedUntil ?? .distantPast) > .now }
+
+    /// Actionable and not snoozed — what the Home feed shows.
+    var isVisibleInFeed: Bool { isActionable && !isSnoozed }
 
     /// The "Fight for me" button is only shown when LEVER is confident and the potential value is real.
     var qualifiesForFightForMe: Bool {

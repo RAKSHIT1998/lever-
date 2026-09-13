@@ -5,6 +5,12 @@ import UIKit
 
 /// On-device text recognition with Vision, plus native PDF text extraction (falling back to OCR for scanned PDFs).
 struct OCRService: TextRecognizing {
+    static let customWords: [String] = {
+        let merchants = MerchantDirectory.entries.map(\.name)
+        let products = ["MacBook", "iPhone", "iPad", "AirPods", "AppleCare", "PlayStation", "Galaxy", "OnePlus", "Kindle", "Dyson", "GST", "GSTIN", "IGST", "CGST", "SGST", "UPI", "IMPS", "NEFT", "PNR", "Invoice", "Subtotal", "Warranty"]
+        return Array(Set(merchants + products))
+    }()
+
     func recognizeText(in imageData: Data) async throws -> RecognizedText {
         guard let image = UIImage(data: imageData), let cgImage = image.cgImage else {
             throw IntelligenceError.unreadable
@@ -73,6 +79,8 @@ struct OCRService: TextRecognizing {
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true
             request.recognitionLanguages = ["en-IN", "en-US", "en-GB"]
+            // Merchant and product names OCR tends to mangle; biasing recognition towards them is free accuracy.
+            request.customWords = Self.customWords
 
             let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation)
             DispatchQueue.global(qos: .userInitiated).async {

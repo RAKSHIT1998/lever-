@@ -12,7 +12,7 @@ struct HomeView: View {
     @State private var showSources = false
 
     private var open: [Opportunity] {
-        OpportunityRanker.rank(allOpportunities.filter(\.isActionable)) { $0.priorityScore }
+        OpportunityRanker.rank(allOpportunities.filter { $0.isVisibleInFeed && $0.currencyCode == env.currencyCode }) { $0.priorityScore }
     }
 
     private var totals: SavingsTotals { SavingsTotals(events: savingsEvents, currencyCode: env.currencyCode) }
@@ -47,6 +47,10 @@ struct HomeView: View {
                         if open.count > 4 {
                             Button(showAll ? "Show fewer" : "Show \(open.count - 4) more") { withAnimation(Motion.snappy) { showAll.toggle() } }
                                 .buttonStyle(.secondary)
+                        }
+                        if otherCurrencyCount > 0 {
+                            Text("\(otherCurrencyCount) more in other currencies — see them in the Vault.")
+                                .font(LeverFont.caption).foregroundStyle(LeverColor.inkTertiary).frame(maxWidth: .infinity)
                         }
                     }
 
@@ -132,7 +136,8 @@ struct HomeView: View {
         open.filter { ($0.deadline ?? .distantPast) >= Calendar.current.startOfDay(for: .now) }.min { ($0.deadline ?? .distantFuture) < ($1.deadline ?? .distantFuture) }
     }
 
-    private var watchedValue: Decimal { purchases.map(\.amount).reduce(0, +) }
+    private var watchedValue: Decimal { purchases.filter { $0.currencyCode == env.currencyCode }.map(\.amount).reduce(0, +) }
+    private var otherCurrencyCount: Int { allOpportunities.filter { $0.isVisibleInFeed && $0.currencyCode != env.currencyCode }.count }
 
     /// The value proposition in one panel: what LEVER can still save, what it protects, what's next.
     private var hero: some View {

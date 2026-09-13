@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import Observation
 import UserNotifications
+import UIKit
 
 /// Composition root. Everything the features need is injected from here — no global singletons in feature code.
 @MainActor
@@ -84,6 +85,8 @@ final class AppEnvironment {
         )
         env.launchedForUITests = uiTesting
         if uiTesting {
+            // XCUITest waits for animations to settle before every query; none of ours carry meaning in tests.
+            UIView.setAnimationsEnabled(false)
             env.store.debugOverridePro = arguments.contains("-pro") ? true : nil
             let settings = env.repository.settings()
             settings.hasCompletedOnboarding = !arguments.contains("-onboarding")

@@ -35,7 +35,7 @@ Tools: **Subscription audit** (monthly/yearly totals, increases, unused), **Next
 
 | Service | Used for | What leaves the device |
 |---|---|---|
-| **Google Gemini API** (free tier, *your* key, opt-in) | Fills fields the on-device parser missed or read with low confidence | The recognised text of that one document — never images, PDFs, statements or the vault. Off by default. |
+| **Google Gemini API** (free tier, *your* key, opt-in) | Fills fields the on-device parser missed or read with low confidence; reads the **photo itself** when OCR finds nothing usable; powers "Re-read with AI" on the review screen and free-form Ask LEVER questions | The recognised text of that one document, or — only when OCR fails on a photo — that photo. Never PDFs, statements or the vault. Off by default. |
 | **Clearbit Autocomplete** (keyless) | Merchant name → website domain for logos and support links | The merchant name only (e.g. "Croma"). Toggle in Privacy Center. |
 | **Google / DuckDuckGo favicon services** (keyless) | Merchant logos | The merchant's domain. |
 | **frankfurter.dev** (ECB rates, keyless) | "≈" conversion of other-currency opportunities into your home currency | Nothing personal — a currency code. Cached daily. |

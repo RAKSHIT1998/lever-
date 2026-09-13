@@ -78,8 +78,14 @@ final class LEVERUITests: XCTestCase {
         XCTAssertTrue(link.waitForExistence(timeout: 5))
         link.tap()
         XCTAssertTrue(app.navigationBars["Privacy Center"].waitForExistence(timeout: 5))
-        app.swipeUp()
-        let delete = app.descendants(matching: .any).matching(identifier: "deleteEverythingButton").firstMatch
-        XCTAssertTrue(delete.waitForExistence(timeout: 5))
+        // Cheap, typed queries only — a full-tree `descendants(.any)` scan over this long form times out.
+        let delete = app.buttons["deleteEverythingButton"]
+        var found = false
+        for _ in 0..<4 {
+            if delete.exists { found = true; break }
+            app.swipeUp()
+            sleep(1)
+        }
+        XCTAssertTrue(found || delete.waitForExistence(timeout: 5))
     }
 }

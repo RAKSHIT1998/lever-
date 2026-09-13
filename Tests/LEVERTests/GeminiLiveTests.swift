@@ -34,3 +34,19 @@ final class GeminiLiveTests: XCTestCase {
         XCTAssertTrue(doc.providerName.contains("Gemini"))
     }
 }
+
+extension GeminiLiveTests {
+    func testVisionReadsReceiptPhoto() async throws {
+        guard let key = GeminiIntelligenceProvider.buildDefaultKey else { throw XCTSkip("No Gemini key") }
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Fixtures/receipt-croma.jpg")
+        let data = try Data(contentsOf: url)
+        let cloud = GeminiIntelligenceProvider(apiKey: key, model: GeminiIntelligenceProvider.storedModel)
+        let e: GeminiIntelligenceProvider.Extraction
+        do { e = try await cloud.extract(imageData: data) } catch { throw XCTSkip("Gemini unavailable: \(error.localizedDescription)") }
+        XCTAssertEqual(e.merchant?.lowercased().contains("croma"), true)
+        XCTAssertEqual(e.amount ?? 0, 34_090.20, accuracy: 0.01)
+        XCTAssertEqual(e.warranty_months, 12)
+        XCTAssertEqual(e.purchase_date, "2026-09-10")
+        XCTAssertEqual(e.currency, "INR")
+    }
+}

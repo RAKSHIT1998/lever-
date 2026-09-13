@@ -6,6 +6,10 @@ struct DocumentReviewView: View {
     let sourceDescription: String
     let onConfirm: (PurchaseDocument) -> Void
     let onCancel: () -> Void
+    /// When set, shows "Re-read with AI"; returns the improved document and how many fields changed.
+    var onReread: (() async -> (PurchaseDocument, Int))? = nil
+    @State private var rereading = false
+    @State private var rereadNote: String?
 
     @State private var editing = false
     @State private var amountText: String
@@ -19,11 +23,12 @@ struct DocumentReviewView: View {
     @State private var isSubscription: Bool
     @State private var cycle: BillingCycle
 
-    init(document: PurchaseDocument, sourceDescription: String, startEditing: Bool = false, onConfirm: @escaping (PurchaseDocument) -> Void, onCancel: @escaping () -> Void) {
+    init(document: PurchaseDocument, sourceDescription: String, startEditing: Bool = false, onReread: (() async -> (PurchaseDocument, Int))? = nil, onConfirm: @escaping (PurchaseDocument) -> Void, onCancel: @escaping () -> Void) {
         _doc = State(initialValue: document)
         self.sourceDescription = sourceDescription
         self.onConfirm = onConfirm
         self.onCancel = onCancel
+        self.onReread = onReread
         _amountText = State(initialValue: document.amount.map { "\($0)" } ?? "")
         _hasPurchaseDate = State(initialValue: document.purchaseDate != nil)
         _purchaseDate = State(initialValue: document.purchaseDate ?? .now)
@@ -55,6 +60,29 @@ struct DocumentReviewView: View {
 
                 if !doc.fieldsNeedingVerification.isEmpty && !editing {
                     InsightBanner(symbol: "eye", title: "Worth a quick check", message: "Fields marked with a dot were read with lower confidence. Tap Edit to correct anything.", tint: LeverColor.opportunity)
+                }
+
+                if let onReread, !editing {
+                    Button {
+                        rereading = true
+                        Task {
+                            let (improved, changed) = await onReread()
+                            load(improved)
+                            rereadNote = changed == 0 ? "Gemini agreed with the on-device read." : "Gemini updated \(changed) field\(changed == 1 ? "" : "s") — dots mark what to double-check."
+                            rereading = false
+                            if changed > 0 { Haptics.actionCompleted() }
+                        }
+                    } label: {
+                        HStack {
+                            Label(rereading ? "Re-reading with Gemini…" : "Re-read with AI", systemImage: "sparkles")
+                            Spacer()
+                            if rereading { ProgressView().controlSize(.small) }
+                        }
+                    }
+                    .buttonStyle(.secondary)
+                    .disabled(rereading)
+                    .accessibilityIdentifier("rereadButton")
+                    if let rereadNote { Text(rereadNote).font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary) }
                 }
 
                 if editing { editor } else { summary }
@@ -198,6 +226,21 @@ struct DocumentReviewView: View {
                 .padding(10)
                 .background(LeverColor.surfaceElevated, in: RoundedRectangle(cornerRadius: Radius.sm))
         }
+    }
+
+    /// Replace the document and re-seed the editor's field states.
+    private func load(_ d: PurchaseDocument) {
+        doc = d
+        amountText = d.amount.map { "\($0)" } ?? ""
+        hasPurchaseDate = d.purchaseDate != nil
+        purchaseDate = d.purchaseDate ?? purchaseDate
+        hasReturnDeadline = d.returnDeadline != nil
+        returnDeadline = d.returnDeadline ?? returnDeadline
+        hasRenewal = d.renewalDate != nil || d.subscription?.nextBillingDate != nil
+        renewalDate = d.subscription?.nextBillingDate ?? d.renewalDate ?? renewalDate
+        warrantyMonths = d.warranties.first?.months ?? 0
+        isSubscription = d.subscription != nil
+        cycle = d.subscription?.billingCycle ?? cycle
     }
 
     private func applyEdits() {

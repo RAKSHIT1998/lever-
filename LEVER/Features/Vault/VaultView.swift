@@ -5,13 +5,16 @@ struct VaultView: View {
     @Environment(AppEnvironment.self) private var env
     @Query(sort: \Purchase.createdAt, order: .reverse) private var purchases: [Purchase]
     @State private var category: VaultCategory = .all
+    @State private var sort: VaultSort = .recent
     @State private var query = ""
     @State private var selected: Purchase?
     @State private var showManualEntry = false
 
     private var filtered: [Purchase] {
-        VaultFilter.apply(purchases, category: category, query: query)
+        sort.apply(VaultFilter.apply(purchases, category: category, query: query))
     }
+
+    private func count(_ c: VaultCategory) -> Int { purchases.filter { VaultFilter.matches($0, category: c) }.count }
 
     var body: some View {
         NavigationStack {
@@ -25,53 +28,57 @@ struct VaultView: View {
                             .font(LeverFont.callout.weight(.medium)).foregroundStyle(LeverColor.inkSecondary)
                     }
                 } else {
-                    List {
-                        Section {
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: Spacing.sm) {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: Spacing.xs) {
-                                    ForEach(VaultCategory.allCases) { item in
+                                    ForEach(VaultCategory.allCases.filter { $0 == .all || count($0) > 0 }) { item in
                                         Button {
                                             withAnimation(Motion.gentle) { category = item }
                                             Haptics.selection()
                                         } label: {
-                                            Text(item.displayName)
-                                                .font(LeverFont.label)
-                                                .padding(.horizontal, 12).padding(.vertical, 7)
-                                                .background(category == item ? LeverColor.ink : LeverColor.surface, in: Capsule())
-                                                .foregroundStyle(category == item ? LeverColor.background : LeverColor.ink)
-                                                .overlay(Capsule().strokeBorder(LeverColor.hairline))
+                                            HStack(spacing: 5) {
+                                                Text(item.displayName)
+                                                Text("\(count(item))").font(.caption2.weight(.bold)).opacity(0.7)
+                                            }
+                                            .font(LeverFont.label)
+                                            .padding(.horizontal, 12).padding(.vertical, 7)
+                                            .background(category == item ? LeverColor.ink : LeverColor.surface, in: Capsule())
+                                            .foregroundStyle(category == item ? LeverColor.background : LeverColor.ink)
+                                            .overlay(Capsule().strokeBorder(LeverColor.hairline))
                                         }
                                         .buttonStyle(.plain)
                                     }
                                 }
                                 .padding(.horizontal, Spacing.md)
                             }
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                        }
-                        if filtered.isEmpty {
-                            Text("Nothing matches \"\(query)\".").font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary)
-                                .listRowBackground(Color.clear)
-                        }
-                        Section {
+                            HStack {
+                                Text("\(filtered.count) record\(filtered.count == 1 ? "" : "s") · \(Money.format(filtered.map(\.amount).reduce(0, +), code: env.currencyCode, compact: true))")
+                                    .font(LeverFont.caption).foregroundStyle(LeverColor.inkSecondary)
+                                Spacer()
+                                Menu {
+                                    Picker("Sort", selection: $sort) { ForEach(VaultSort.allCases) { Text($0.title).tag($0) } }
+                                } label: {
+                                    Label(sort.title, systemImage: "arrow.up.arrow.down").font(LeverFont.caption.weight(.semibold)).foregroundStyle(LeverColor.ink)
+                                }
+                            }
+                            .padding(.horizontal, Spacing.md)
+                            if filtered.isEmpty {
+                                Text("Nothing matches \"\(query)\".").font(LeverFont.callout).foregroundStyle(LeverColor.inkSecondary).padding(Spacing.md)
+                            }
                             ForEach(filtered) { purchase in
-                                Button { selected = purchase } label: { PurchaseRow(purchase: purchase) }
+                                Button { selected = purchase } label: { PurchaseCard(purchase: purchase) }
                                     .buttonStyle(.plain)
-                                    .listRowBackground(LeverColor.surface)
                                     .accessibilityIdentifier("vaultRow")
+                                    .contextMenu {
+                                        Button(role: .destructive) { Task { await env.repository.delete(purchase) } } label: { Label("Delete", systemImage: "trash") }
+                                    }
+                                    .padding(.horizontal, Spacing.md)
                             }
-                            .onDelete { offsets in
-                                let items = offsets.map { filtered[$0] }
-                                Task { for item in items { await env.repository.delete(item) } }
-                            }
-                        } footer: {
-                            Text("\(filtered.count) of \(purchases.count) · \(Money.format(filtered.map(\.amount).reduce(0, +), code: env.currencyCode))")
-                                .font(LeverFont.caption)
                         }
+                        .padding(.vertical, Spacing.xs)
+                        .padding(.bottom, Spacing.xl)
                     }
-                    .listStyle(.insetGrouped)
-                    .scrollContentBackground(.hidden)
                     .searchable(text: $query, prompt: "MacBook, Amazon, warranty, expires this month…")
                 }
             }
@@ -179,5 +186,39 @@ struct ManualPurchaseSheet: View {
         doc.providerName = "Entered manually"
         doc.fieldConfidences = ["purchaseDate": 1.0]
         return doc
+    }
+}
+
+
+enum VaultSort: String, CaseIterable, Identifiable {
+    case recent, amount, nextEvent, name
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .recent: "Newest"
+        case .amount: "Highest amount"
+        case .nextEvent: "Next deadline"
+        case .name: "Name"
+        }
+    }
+
+    @MainActor
+    func apply(_ items: [Purchase]) -> [Purchase] {
+        switch self {
+        case .recent: items.sorted { ($0.purchaseDate ?? $0.createdAt) > ($1.purchaseDate ?? $1.createdAt) }
+        case .amount: items.sorted { $0.amount > $1.amount }
+        case .name: items.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+        case .nextEvent: items.sorted { (Self.next($0) ?? .distantFuture) < (Self.next($1) ?? .distantFuture) }
+        }
+    }
+
+    @MainActor
+    private static func next(_ p: Purchase) -> Date? {
+        let now = Date.now
+        var dates: [Date] = []
+        if let d = p.returnWindow?.deadline, d >= now { dates.append(d) }
+        if let d = p.subscription?.nextBillingDate, p.subscription?.status != .cancelled, d >= now { dates.append(d) }
+        dates += p.warranties.compactMap(\.endDate).filter { $0 >= now }
+        return dates.min()
     }
 }

@@ -26,6 +26,10 @@ final class CaptureViewModel {
     var foundOpportunities: [Opportunity] = []
     var rawInputDescription = ""
     var pendingInbox: InboxItem?
+    /// What produced the current document — lets the review screen ask the cloud to re-read the same input.
+    private(set) var lastInput: CaptureInput?
+    /// Screenshots waiting their turn (batch capture).
+    var queue: [UIImage] = []
 
     init(env: AppEnvironment) {
         self.env = env
@@ -46,11 +50,34 @@ final class CaptureViewModel {
 
     // MARK: - Entry points
 
+    /// Batch: process the first now, keep the rest for after the user finishes this one.
+    func enqueue(images: [UIImage]) async {
+        guard let first = images.first else { return }
+        queue = Array(images.dropFirst())
+        await process(images: [first])
+    }
+
+    /// Pops the next queued screenshot, if any. Returns false when the batch is done.
+    @discardableResult
+    func processNextInQueue() async -> Bool {
+        guard !queue.isEmpty else { return false }
+        let next = queue.removeFirst()
+        reset(keepQueue: true)
+        await process(images: [next])
+        return true
+    }
+
     func process(images: [UIImage]) async {
         let datas = images.compactMap { $0.leverNormalisedJPEG() }
         guard !datas.isEmpty else { return fail("Couldn't read that image.") }
         files = datas.map(CaptureFile.image)
         rawInputDescription = datas.count > 1 ? "\(datas.count) pages" : "Photo"
+        if datas.count == 1, let data = datas.first {
+            // Single photo: the provider handles OCR — and, with cloud on, can read the image itself if OCR fails.
+            lastInput = .image(data)
+            await run { try await self.env.intelligence.extractDocument(from: .image(data), currencyCode: self.env.currencyCode) }
+            return
+        }
         // OCR all pages and merge; understanding runs on the merged text.
         await run {
             var merged: [String] = []
@@ -63,6 +90,7 @@ final class CaptureViewModel {
             }
             guard !merged.isEmpty else { throw IntelligenceError.unreadable }
             let joined = merged.joined(separator: "\n")
+            self.lastInput = .text(joined)
             var doc = try await self.env.intelligence.extractDocument(from: .text(joined), currencyCode: self.env.currencyCode)
             // Carry OCR confidence into the document's field confidences.
             let avg = confidences.reduce(0, +) / Double(max(confidences.count, 1))
@@ -77,6 +105,7 @@ final class CaptureViewModel {
     func process(pdf data: Data) async {
         files = [.pdf(data)]
         rawInputDescription = "PDF"
+        lastInput = .pdf(data)
         await run { try await self.env.intelligence.extractDocument(from: .pdf(data), currencyCode: self.env.currencyCode) }
     }
 
@@ -85,6 +114,7 @@ final class CaptureViewModel {
         rawInputDescription = "Text"
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count > 3 else { return fail("Paste a receipt, email or confirmation text first.") }
+        lastInput = .text(trimmed)
         if let url = URL(string: trimmed), let scheme = url.scheme, ["http", "https"].contains(scheme), !trimmed.contains(" ") {
             await run { try await self.env.intelligence.extractDocument(from: .url(url), currencyCode: self.env.currencyCode) }
         } else {
@@ -227,13 +257,36 @@ final class CaptureViewModel {
         }
     }
 
-    func reset() {
+    /// Whether the review screen should offer a cloud re-read.
+    var canRereadWithAI: Bool { env.settings.cloudAIEnabled && GeminiIntelligenceProvider.storedKey != nil && document != nil }
+
+    /// Explicit "Re-read with AI": returns how many fields changed.
+    func rereadWithAI() async -> Int {
+        guard let current = document else { return 0 }
+        let improved = await HybridIntelligenceProvider.improve(current, input: lastInput)
+        let before = current
+        document = improved
+        var changed = 0
+        if improved.merchant != before.merchant { changed += 1 }
+        if improved.amount != before.amount { changed += 1 }
+        if improved.purchaseDate != before.purchaseDate { changed += 1 }
+        if improved.productTitle != before.productTitle { changed += 1 }
+        if improved.renewalDate != before.renewalDate { changed += 1 }
+        if improved.returnDeadline != before.returnDeadline { changed += 1 }
+        if improved.warranties != before.warranties { changed += 1 }
+        if improved.orderNumber != before.orderNumber { changed += 1 }
+        return changed
+    }
+
+    func reset(keepQueue: Bool = false) {
         phase = .idle
         document = nil
         files = []
         savedPurchase = nil
         foundOpportunities = []
         pendingInbox = nil
+        lastInput = nil
+        if !keepQueue { queue = [] }
     }
 }
 

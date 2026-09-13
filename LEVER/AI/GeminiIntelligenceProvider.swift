@@ -100,14 +100,27 @@ struct GeminiIntelligenceProvider: IntelligenceProvider {
     // MARK: - API
 
     func extract(text: String) async throws -> Extraction {
+        try await extract(parts: [["text": Self.prompt + "\n" + String(text.prefix(12_000))]])
+    }
+
+    /// Vision path: the photo itself, for crumpled/handwritten/low-contrast receipts OCR can't read.
+    /// Only used when the user has enabled cloud intelligence *and* the on-device read is unusable.
+    func extract(imageData: Data) async throws -> Extraction {
+        try await extract(parts: [
+            ["text": Self.prompt.replacingOccurrences(of: "TEXT:", with: "The document is the attached image.")],
+            ["inline_data": ["mime_type": "image/jpeg", "data": imageData.base64EncodedString()]],
+        ])
+    }
+
+    private func extract(parts: [[String: Any]]) async throws -> Extraction {
         guard !apiKey.isEmpty else { throw IntelligenceError.remoteUnavailable }
         var request = URLRequest(url: URL(string: "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent")!)
         request.httpMethod = "POST"
-        request.timeoutInterval = 30
+        request.timeoutInterval = 45
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
         let body: [String: Any] = [
-            "contents": [["parts": [["text": Self.prompt + "\n" + String(text.prefix(12_000))]]]],
+            "contents": [["parts": parts]],
             "generationConfig": ["temperature": 0, "response_mime_type": "application/json", "response_schema": Self.responseSchema],
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -196,15 +209,41 @@ struct HybridIntelligenceProvider: IntelligenceProvider {
     var processesOnDevice: Bool { !(isCloudEnabled() && GeminiIntelligenceProvider.storedKey != nil) }
 
     func extractDocument(from input: CaptureInput, currencyCode: String) async throws -> PurchaseDocument {
-        var doc = try await local.extractDocument(from: input, currencyCode: currencyCode)
-        guard isCloudEnabled(), let key = GeminiIntelligenceProvider.storedKey, Self.needsHelp(doc) else { return doc }
-        let cloud = GeminiIntelligenceProvider(apiKey: key, model: GeminiIntelligenceProvider.storedModel)
-        if let extraction = try? await cloud.extract(text: doc.rawText) {
-            GeminiIntelligenceProvider.apply(extraction, to: &doc, confidence: 0.75)
-            doc.providerName = "On-device + Gemini"
-            doc.processedOnDevice = false
+        var doc: PurchaseDocument
+        do {
+            doc = try await local.extractDocument(from: input, currencyCode: currencyCode)
+        } catch {
+            // OCR found nothing readable. With cloud on, the photo itself can still be understood.
+            guard isCloudEnabled(), GeminiIntelligenceProvider.storedKey != nil, case .image(let data) = input else { throw error }
+            doc = PurchaseDocument(rawText: "", currencyCode: currencyCode)
+            _ = data
         }
-        return doc
+        guard isCloudEnabled(), GeminiIntelligenceProvider.storedKey != nil, Self.needsHelp(doc) else { return doc }
+        return await Self.improve(doc, input: input)
+    }
+
+    /// Runs Gemini over the document (image when available, text otherwise) and merges into the weak fields.
+    /// Returns the document unchanged if the cloud is unavailable. Also used by the review screen's "Re-read with AI".
+    static func improve(_ doc: PurchaseDocument, input: CaptureInput?) async -> PurchaseDocument {
+        guard let key = GeminiIntelligenceProvider.storedKey else { return doc }
+        let cloud = GeminiIntelligenceProvider(apiKey: key, model: GeminiIntelligenceProvider.storedModel)
+        var result = doc
+        let extraction: GeminiIntelligenceProvider.Extraction?
+        if case .image(let data)? = input, doc.rawText.squashedWhitespace.count < 40 || doc.amount == nil {
+            extraction = try? await cloud.extract(imageData: data)
+        } else if !doc.rawText.isEmpty {
+            extraction = try? await cloud.extract(text: doc.rawText)
+        } else if case .image(let data)? = input {
+            extraction = try? await cloud.extract(imageData: data)
+        } else {
+            extraction = nil
+        }
+        guard let extraction else { return doc }
+        GeminiIntelligenceProvider.apply(extraction, to: &result, confidence: 0.75)
+        result.providerName = doc.rawText.isEmpty ? "Gemini (image)" : "On-device + Gemini"
+        result.processedOnDevice = false
+        if result.rawText.isEmpty { result.rawText = "[Read directly from the photo by Gemini]" }
+        return result
     }
 
     static func needsHelp(_ doc: PurchaseDocument) -> Bool {

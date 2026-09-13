@@ -59,6 +59,7 @@ struct HomeView: View {
                         }
                     }
 
+                    quickActions
                     insightsSection
                     thisMonth
                     toolsRow
@@ -183,6 +184,21 @@ struct HomeView: View {
 
     private var connectedSources: Int {
         1 + (env.settings.screenshotWatchEnabled ? 1 : 0) + (env.settings.walletConnected ? 1 : 0) + (purchases.contains { $0.productURL != nil } ? 1 : 0) + (purchases.contains { $0.subscription?.source.lowercased().contains("statement") ?? false } ? 1 : 0)
+    }
+
+    @State private var showAsk = false
+    @State private var showStatementImport = false
+
+    private var quickActions: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            SectionHeader(title: "Quick actions")
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.xs) {
+                QuickActionCard(symbol: "viewfinder", title: "Scan", subtitle: "Receipt, bill or screen") { env.router.selectedTab = .capture }
+                QuickActionCard(symbol: "building.columns", title: "Statement", subtitle: "Find every recurring charge", tint: LeverColor.info) { showSources = true }
+                QuickActionCard(symbol: "doc.on.clipboard", title: "Paste", subtitle: "Email or confirmation text", tint: LeverColor.opportunity) { env.router.pendingPasteRequest = true; env.router.selectedTab = .capture }
+                QuickActionCard(symbol: "text.bubble", title: "Ask LEVER", subtitle: "Warranties, renewals, returns…", tint: LeverColor.money) { toolDestination = .askLever }
+            }
+        }
     }
 
     private var insights: [Insight] {

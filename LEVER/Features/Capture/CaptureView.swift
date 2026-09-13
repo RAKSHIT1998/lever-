@@ -39,7 +39,7 @@ struct CaptureView: View {
                     ProcessingView(step: step)
                 case .review:
                     if let doc = model.document {
-                        DocumentReviewView(document: doc, sourceDescription: model.rawInputDescription) { edited in
+                        DocumentReviewView(document: doc, sourceDescription: model.rawInputDescription, onReread: model.canRereadWithAI ? { let n = await model.rereadWithAI(); return (model.document ?? doc, n) } : nil) { edited in
                             model.document = edited
                             Task { await model.confirmAndSave() }
                         } onCancel: {
@@ -50,7 +50,7 @@ struct CaptureView: View {
                     ProcessingView(step: 3)
                 case .result:
                     if let purchase = model.savedPurchase {
-                        MagicMomentView(purchase: purchase, opportunities: model.foundOpportunities) {
+                        MagicMomentView(purchase: purchase, opportunities: model.foundOpportunities, remainingInBatch: model.queue.count) {
                             finishFlow(model)
                         }
                     }
@@ -107,20 +107,31 @@ struct CaptureView: View {
                     env.router.pendingScreenshot = nil
                     Task { await model.process(images: [image]) }
                 }
+                if env.router.pendingPasteRequest {
+                    env.router.pendingPasteRequest = false
+                    pasteRequest = PasteRequest(text: Self.pasteFixture ?? UIPasteboard.general.string ?? "")
+                }
             }
             .onChange(of: photoItems) { _, items in
-                guard let item = items.first else { return }
+                guard !items.isEmpty else { return }
                 photoItems = []
                 Task {
-                    if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
-                        await model.process(images: [image])
+                    var images: [UIImage] = []
+                    for item in items {
+                        if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) { images.append(image) }
                     }
+                    guard !images.isEmpty else { return }
+                    if images.count == 1 { await model.process(images: images) } else { await model.enqueue(images: images) }
                 }
             }
         }
     }
 
     private func finishFlow(_ model: CaptureViewModel) {
+        if !model.queue.isEmpty {
+            Task { await model.processNextInQueue() }
+            return
+        }
         model.reset()
         if embeddedInOnboarding {
             onFinished?()
@@ -188,12 +199,12 @@ struct CaptureView: View {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     SectionHeader(title: "Or choose")
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.xs) {
-                        PhotosPicker(selection: $photoItems, maxSelectionCount: 1, matching: .any(of: [.images, .screenshots])) {
-                            SourceTile(symbol: "photo.on.rectangle", title: "Photo")
+                        PhotosPicker(selection: $photoItems, maxSelectionCount: 10, matching: .any(of: [.images, .screenshots])) {
+                            SourceTile(symbol: "photo.on.rectangle", title: "Photos", hint: "Up to 10")
                         }
                         .disabled(!model.canCapture)
-                        PhotosPicker(selection: $photoItems, maxSelectionCount: 1, matching: .screenshots) {
-                            SourceTile(symbol: "rectangle.dashed.badge.record", title: "Screenshot")
+                        PhotosPicker(selection: $photoItems, maxSelectionCount: 10, matching: .screenshots) {
+                            SourceTile(symbol: "rectangle.dashed.badge.record", title: "Screenshots", hint: "Up to 10")
                         }
                         .disabled(!model.canCapture)
                         Button { showFileImporter = true } label: { SourceTile(symbol: "doc.richtext", title: "PDF") }

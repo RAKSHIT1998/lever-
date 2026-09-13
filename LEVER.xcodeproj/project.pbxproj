@@ -22,6 +22,7 @@
 		14342FA0AF21E9A2B49662B9 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A43C646EE878EEA133E836 /* AnalyticsService.swift */; };
 		1688060E8BDFAB7E4C27A506 /* IntelligenceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DCDBEEB369BDF081E43A6EB /* IntelligenceProvider.swift */; };
 		19047DE588F27D4A88895F0D /* OpportunityEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BAEE97CB2310EF412481B7 /* OpportunityEngine.swift */; };
+		1A37E346657083C9E939B1FB /* PurchaseCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896E8EFC403B051E0E914B55 /* PurchaseCard.swift */; };
 		1D7721BCA4A386B4FB4FC9FD /* WarrantyExpirationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59853E27108B96393B1C150 /* WarrantyExpirationRule.swift */; };
 		215AECDE9A2DBA06A8FFAC55 /* ExpansionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6131AB07DCF728E199582EC3 /* ExpansionTests.swift */; };
 		239EBD905B4A9F206810932F /* SavingsConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B39F8035DC9B36A451BB259 /* SavingsConfirmationSheet.swift */; };
@@ -262,6 +263,7 @@
 		8192D0F248DF91596EC4415B /* LEVERShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LEVERShareExtension.entitlements; sourceTree = "<group>"; };
 		84E4165F3907594F87ADF993 /* SavingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsView.swift; sourceTree = "<group>"; };
 		852FEB56127D43294384DE74 /* Cards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cards.swift; sourceTree = "<group>"; };
+		896E8EFC403B051E0E914B55 /* PurchaseCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseCard.swift; sourceTree = "<group>"; };
 		8B39F8035DC9B36A451BB259 /* SavingsConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsConfirmationSheet.swift; sourceTree = "<group>"; };
 		8BBCB66A1236FFCE9418B68E /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		9228728BCDC955472BD8C811 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
@@ -711,6 +713,7 @@
 				73D0A57A8C87BAB6B18E6D1C /* MerchantAvatar.swift */,
 				64A314F4C44C60DB3DDA32D5 /* MoneyAmount.swift */,
 				65384D6954394F9EAE9983E1 /* Monogram.swift */,
+				896E8EFC403B051E0E914B55 /* PurchaseCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1205,6 +1208,7 @@
 				BFFBAEBBEE73A9DF4A6D8958 /* Protocols.swift in Sources */,
 				BF23613816EE9F52F938F3C4 /* PublicPagePriceMonitor.swift in Sources */,
 				7738F6AB8CB4D3AF81C43A78 /* Purchase.swift in Sources */,
+				1A37E346657083C9E939B1FB /* PurchaseCard.swift in Sources */,
 				5794B883933BD754E2F74AD5 /* PurchaseDetailView.swift in Sources */,
 				CFEFCF7DDD1739A62DCDE46B /* PurchaseDocument.swift in Sources */,
 				6A0BEDDD0E8BBD544D96FB97 /* PurchaseProtectionRule.swift in Sources */,

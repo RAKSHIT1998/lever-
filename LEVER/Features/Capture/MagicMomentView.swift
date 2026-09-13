@@ -4,6 +4,7 @@ import SwiftUI
 struct MagicMomentView: View {
     let purchase: Purchase
     let opportunities: [Opportunity]
+    var remainingInBatch = 0
     let onDone: () -> Void
 
     @State private var revealed = false
@@ -64,7 +65,7 @@ struct MagicMomentView: View {
                             .buttonStyle(.money)
                             .accessibilityIdentifier("magicPrimaryButton")
                     }
-                    Button(headline == nil ? "Done" : "Later", action: onDone)
+                    Button(remainingInBatch > 0 ? "Next screenshot (\(remainingInBatch) left)" : (headline == nil ? "Done" : "Later"), action: onDone)
                         .buttonStyle(.secondary)
                         .accessibilityIdentifier("magicDoneButton")
                 }
